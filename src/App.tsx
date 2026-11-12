@@ -39,11 +39,10 @@ import {
   IconX,
   IconZoomIn,
   IconZoomOut,
-  IconRotate,
-  IconRotateClockwise,
   IconBrightnessDown,
   IconBrightnessUp,
   IconArrowBackUp,
+  IconArrowsHorizontal,
 } from '@tabler/icons-react';
 import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { DEFAULT_EDITS, type Check, type Edits } from './checks';
@@ -288,11 +287,26 @@ const clampEdit = (key: keyof Edits, v: number) => {
   return Math.min(s.max, Math.max(s.min, +v.toFixed(3)));
 };
 
-const TOOLS: { label: string; icon: typeof IconZoomIn; key: keyof Edits; step: number }[] = [
+// Tabler has no clear "tilt" icon (rotate arrows read as undo/redo): a tilted photo frame with a head.
+const tiltIcon = (deg: number) =>
+  function TiltIcon({ size = 24 }: { size?: number }) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M3 21h18" />
+        <g transform={`rotate(${deg} 12 12)`}>
+          <rect x={7} y={3} width={10} height={14} rx={1.5} />
+          <circle cx={12} cy={8.5} r={2} />
+          <path d="M9 14.5c.8-1.4 1.8-2 3-2s2.2.6 3 2" />
+        </g>
+      </svg>
+    );
+  };
+
+const TOOLS: { label: string; icon: React.ComponentType<{ size?: number }>; key: keyof Edits; step: number }[] = [
   { label: 'Zoom out', icon: IconZoomOut, key: 'zoom', step: -0.02 },
   { label: 'Zoom in', icon: IconZoomIn, key: 'zoom', step: 0.02 },
-  { label: 'Tilt left', icon: IconRotate, key: 'rotate', step: -0.5 },
-  { label: 'Tilt right', icon: IconRotateClockwise, key: 'rotate', step: 0.5 },
+  { label: 'Tilt left', icon: tiltIcon(-15), key: 'rotate', step: -0.5 },
+  { label: 'Tilt right', icon: tiltIcon(15), key: 'rotate', step: 0.5 },
   { label: 'Darker', icon: IconBrightnessDown, key: 'brightness', step: -5 },
   { label: 'Brighter', icon: IconBrightnessUp, key: 'brightness', step: 5 },
 ];
@@ -392,6 +406,22 @@ function Preview({ result, spec, edits, setEdits }: { result: ReturnType<typeof 
     }));
   };
 
+  // Face axis through the eyes, turned by the tilt. Its top knob is a drag handle to tilt the photo.
+  const pivot = result?.t?.o;
+  const rad = (edits.rotate * Math.PI) / 180;
+  const axis = pivot && {
+    top: { x: pivot.x + Math.sin(rad) * (pivot.y - 2.5), y: 2.5 + (pivot.y - 2.5) * (1 - Math.cos(rad)) },
+    bottom: { x: pivot.x - Math.sin(rad) * (spec.h - pivot.y), y: pivot.y + Math.cos(rad) * (spec.h - pivot.y) },
+  };
+  const tilt = useRef<{ a0: number; r0: number } | null>(null);
+  const angleAt = (e: React.PointerEvent) => {
+    const r = box.current!.getBoundingClientRect();
+    const px = r.left + (pivot!.x / spec.w) * r.width;
+    const py = r.top + (pivot!.y / spec.h) * r.height;
+    return (Math.atan2(e.clientX - px, py - e.clientY) * 180) / Math.PI;
+  };
+  const setTilt = (v: number) => setEdits((p) => ({ ...p, rotate: clampEdit('rotate', Math.round(v * 10) / 10) }));
+
   const headOk = result?.checks.find((c) => c.id === 'head')?.status === 'pass';
   const line = headOk ? 'var(--mantine-color-teal-6)' : 'var(--mantine-color-red-6)';
   return (
@@ -400,15 +430,17 @@ function Preview({ result, spec, edits, setEdits }: { result: ReturnType<typeof 
       pos="relative"
       mx="auto"
       maw={340}
-      style={{ aspectRatio: `${spec.w} / ${spec.h}`, boxShadow: 'var(--mantine-shadow-md)', cursor: 'grab', touchAction: 'none' }}
+      style={{ aspectRatio: `${spec.w} / ${spec.h}`, boxShadow: 'var(--mantine-shadow-md)', cursor: 'grab', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none' }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerEnd}
       onPointerCancel={onPointerEnd}
     >
       <canvas ref={ref} style={{ width: '100%', height: '100%', display: 'block' }} aria-label="Passport photo preview" />
-      <svg viewBox={`0 0 ${spec.w} ${spec.h}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} aria-hidden>
-        <line x1={spec.w / 2} x2={spec.w / 2} y1={0} y2={spec.h} stroke="#fff" strokeOpacity={0.7} strokeWidth={0.15} strokeDasharray="0.8 0.8" />
+      <svg viewBox={`0 0 ${spec.w} ${spec.h}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} aria-hidden>
+        {axis && (
+          <line x1={axis.top.x} y1={axis.top.y} x2={axis.bottom.x} y2={axis.bottom.y} stroke="#fff" strokeOpacity={0.8} strokeWidth={0.2} strokeDasharray="0.8 0.8" />
+        )}
         {spec.eyeMin !== undefined && spec.eyeMax !== undefined && (
           <rect x={0} width={spec.w} y={spec.h - spec.eyeMax} height={spec.eyeMax - spec.eyeMin} fill="var(--mantine-color-teal-4)" fillOpacity={0.15} />
         )}
@@ -424,6 +456,63 @@ function Preview({ result, spec, edits, setEdits }: { result: ReturnType<typeof 
           </>
         )}
       </svg>
+      {axis && (
+        <Tooltip label="Drag to tilt" withArrow position="top">
+          <Box
+            role="slider"
+            tabIndex={0}
+            aria-label="Tilt photo"
+            aria-valuemin={-10}
+            aria-valuemax={10}
+            aria-valuenow={edits.rotate}
+            aria-valuetext={`${edits.rotate}°`}
+            pos="absolute"
+            w={26}
+            h={26}
+            style={{
+              left: `${(axis.top.x / spec.w) * 100}%`,
+              top: `${(axis.top.y / spec.h) * 100}%`,
+              transform: `translate(-50%, -50%) rotate(${edits.rotate}deg)`,
+              borderRadius: '50%',
+              background: 'white',
+              border: '2px solid var(--mantine-color-teal-6)',
+              boxShadow: 'var(--mantine-shadow-sm)',
+              display: 'grid',
+              placeItems: 'center',
+              color: 'var(--mantine-color-teal-7)',
+              cursor: 'ew-resize',
+              touchAction: 'none',
+            }}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              try {
+                e.currentTarget.setPointerCapture(e.pointerId);
+              } catch {
+                // pointer already gone
+              }
+              tilt.current = { a0: angleAt(e), r0: edits.rotate };
+            }}
+            onPointerMove={(e) => {
+              e.stopPropagation();
+              const t = tilt.current;
+              if (t) setTilt(t.r0 + angleAt(e) - t.a0);
+            }}
+            onPointerUp={(e) => {
+              e.stopPropagation();
+              tilt.current = null;
+            }}
+            onPointerCancel={() => (tilt.current = null)}
+            onKeyDown={(e) => {
+              const step = { ArrowLeft: -0.5, ArrowDown: -0.5, ArrowRight: 0.5, ArrowUp: 0.5 }[e.key];
+              if (step === undefined) return;
+              e.preventDefault();
+              setTilt(edits.rotate + step);
+            }}
+          >
+            <IconArrowsHorizontal size={14} stroke={2.5} />
+          </Box>
+        </Tooltip>
+      )}
     </Box>
   );
 }
