@@ -105,31 +105,6 @@ function alpha(ctx: CanvasRenderingContext2D, c: HTMLCanvasElement) {
   return a;
 }
 
-/** 6 × 4 in print sheet (standard photo print) with as many copies as fit. */
-export function printSheet(photo: HTMLCanvasElement, spec: Spec) {
-  const k = 300 / 25.4;
-  const sheet = canvas(152.4 * k, 101.6 * k);
-  const ctx = sheet.getContext('2d')!;
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(0, 0, sheet.width, sheet.height);
-  const gap = 3;
-  const cols = Math.floor((152.4 - gap) / (spec.w + gap));
-  const rows = Math.floor((101.6 - gap) / (spec.h + gap));
-  const x0 = (152.4 - cols * spec.w - (cols - 1) * gap) / 2;
-  const y0 = (101.6 - rows * spec.h - (rows - 1) * gap) / 2;
-  ctx.strokeStyle = '#bbb';
-  ctx.lineWidth = 1;
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const x = (x0 + c * (spec.w + gap)) * k;
-      const y = (y0 + r * (spec.h + gap)) * k;
-      ctx.drawImage(photo, x, y, spec.w * k, spec.h * k);
-      ctx.strokeRect(x - 0.5, y - 0.5, spec.w * k + 1, spec.h * k + 1);
-    }
-  }
-  return { canvas: sheet, dpi: 300 };
-}
-
 export async function downloadJpeg(c: HTMLCanvasElement, dpi: number, name: string) {
   const blob = await new Promise<Blob>((ok, fail) => c.toBlob((b) => (b ? ok(b) : fail(new Error('Could not encode image'))), 'image/jpeg', 0.95));
   const bytes = setJpegDpi(new Uint8Array(await blob.arrayBuffer()), dpi);

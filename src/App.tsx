@@ -29,7 +29,6 @@ import {
   IconEyeCheck,
   IconLock,
   IconPhotoUp,
-  IconPrinter,
   IconRefresh,
   IconSun,
   IconTrash,
@@ -40,14 +39,15 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { DEFAULT_EDITS, type Check, type Edits } from './checks';
 import { detect, type Detection } from './detect';
 import { COUNTRIES, fmtMm, SIZES, specFor, type Spec } from './formats';
-import { DPI, downloadJpeg, printSheet, render } from './render';
+import { DEFAULT_PRINT, PrintSheet, type PrintSettings } from './PrintSheet';
+import { DPI, downloadJpeg, render } from './render';
 
 const IMG_KEY = 'passport-photo:image';
 const SETTINGS_KEY = 'passport-photo:settings';
 const MAX_SIDE = 2400; // keeps the local backup well under the ~5 MB storage limit
 
-type Settings = { mode: 'country' | 'size'; key: string; edits: Edits };
-const DEFAULT_SETTINGS: Settings = { mode: 'country', key: 'Australia', edits: DEFAULT_EDITS };
+type Settings = { mode: 'country' | 'size'; key: string; edits: Edits; print: PrintSettings };
+const DEFAULT_SETTINGS: Settings = { mode: 'country', key: 'Australia', edits: DEFAULT_EDITS, print: DEFAULT_PRINT };
 
 function loadSettings(): Settings {
   try {
@@ -84,6 +84,7 @@ export default function App() {
   const [mode, setMode] = useState(initial.mode);
   const [key, setKey] = useState(initial.key);
   const [edits, setEdits] = useState(initial.edits);
+  const [print, setPrint] = useState(initial.print);
   const [src, setSrc] = useState<HTMLCanvasElement | null>(null);
   const [det, setDet] = useState<Detection | null>(null);
   const [busy, setBusy] = useState(false);
@@ -93,8 +94,8 @@ export default function App() {
   const spec = specFor(mode, key);
 
   useEffect(() => {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ mode, key, edits }));
-  }, [mode, key, edits]);
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ mode, key, edits, print }));
+  }, [mode, key, edits, print]);
 
   async function open(url: string, backup: boolean) {
     setBusy(true);
@@ -192,9 +193,14 @@ export default function App() {
               <Stack gap="lg">
                 <Checks checks={result?.checks ?? []} busy={busy} />
                 <Adjust edits={edits} setEdits={setEdits} />
-                <Download result={result} spec={spec} label={mode === 'size' ? key : key.replace(/\W+/g, '-')} onClear={clearAll} backupFailed={backupFailed} />
+                <Download result={result} label={mode === 'size' ? key : key.replace(/\W+/g, '-')} onClear={clearAll} backupFailed={backupFailed} />
               </Stack>
             </Grid.Col>
+            {det && result && (
+              <Grid.Col span={12}>
+                <PrintSheet src={src} det={det} edits={edits} spec={spec} current={result} settings={print} setSettings={setPrint} />
+              </Grid.Col>
+            )}
           </Grid>
         )}
 
@@ -440,7 +446,7 @@ function Adjust({ edits, setEdits }: { edits: Edits; setEdits: (e: Edits) => voi
   );
 }
 
-function Download(p: { result: ReturnType<typeof render> | null; spec: Spec; label: string; onClear: () => void; backupFailed: boolean }) {
+function Download(p: { result: ReturnType<typeof render> | null; label: string; onClear: () => void; backupFailed: boolean }) {
   const fails = p.result?.checks.some((c) => c.status === 'fail');
   return (
     <Card withBorder padding="lg">
@@ -452,27 +458,17 @@ function Download(p: { result: ReturnType<typeof render> | null; spec: Spec; lab
           Some checks failed. Your photo may be rejected. Fix them or take a new photo.
         </Alert>
       )}
-      <Stack gap="xs">
-        <Button
-          leftSection={<IconDownload size={18} />}
-          disabled={!p.result}
-          onClick={() => p.result && downloadJpeg(p.result.canvas, DPI, `passport-photo-${p.label}.jpg`)}
-        >
-          Download photo ({DPI} dpi JPEG)
-        </Button>
-        <Button
-          variant="light"
-          leftSection={<IconPrinter size={18} />}
-          disabled={!p.result}
-          onClick={() => {
-            if (!p.result) return;
-            const s = printSheet(p.result.canvas, p.spec);
-            downloadJpeg(s.canvas, s.dpi, `passport-photo-${p.label}-6x4in-print.jpg`);
-          }}
-        >
-          Download 6 × 4 in print sheet
-        </Button>
-      </Stack>
+      <Button
+        fullWidth
+        leftSection={<IconDownload size={18} />}
+        disabled={!p.result}
+        onClick={() => p.result && downloadJpeg(p.result.canvas, DPI, `passport-photo-${p.label}.jpg`)}
+      >
+        Download photo ({DPI} dpi JPEG)
+      </Button>
+      <Text size="xs" c="dimmed" mt={6} ta="center">
+        To print several photos on one sheet, use Print sheet below.
+      </Text>
       <Alert color="gray" variant="light" icon={<IconLock />} mt="md">
         We do not keep your photo. Download it when you finish.{' '}
         {p.backupFailed
