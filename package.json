@@ -1,0 +1,34 @@
+{
+  "name": "passport-photo",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "copy-wasm": "rm -rf public/mediapipe && cp -R node_modules/@mediapipe/tasks-vision/wasm public/mediapipe",
+    "predev": "npm run copy-wasm",
+    "prebuild": "npm run copy-wasm",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@mantine/core": "^9.8.0",
+    "@mantine/dropzone": "^9.8.0",
+    "@mantine/hooks": "^9.8.0",
+    "@mediapipe/tasks-vision": "^1.2.2",
+    "@tabler/icons-react": "^3.51.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "postcss": "^8.5.32",
+    "postcss-preset-mantine": "^1.18.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.7",
+    "vitest": "^5.1.0"
+  }
+}
