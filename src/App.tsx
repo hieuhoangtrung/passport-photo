@@ -1,4 +1,5 @@
 import {
+  ActionIcon,
   Alert,
   Anchor,
   Badge,
@@ -18,6 +19,7 @@ import {
   Switch,
   Text,
   ThemeIcon,
+  Tooltip,
   Title,
 } from '@mantine/core';
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
@@ -34,8 +36,15 @@ import {
   IconTrash,
   IconUser,
   IconX,
+  IconZoomIn,
+  IconZoomOut,
+  IconRotate,
+  IconRotateClockwise,
+  IconBrightnessDown,
+  IconBrightnessUp,
+  IconArrowBackUp,
 } from '@tabler/icons-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { DEFAULT_EDITS, type Check, type Edits } from './checks';
 import { detect, type Detection } from './detect';
 import { COUNTRIES, fmtMm, SIZES, specFor, type Spec } from './formats';
@@ -175,24 +184,28 @@ export default function App() {
         ) : (
           <Grid gap="lg">
             <Grid.Col span={{ base: 12, md: 6 }}>
-              <Card withBorder padding="lg" pos="relative">
-                <LoadingOverlay visible={busy} overlayProps={{ blur: 2 }} />
-                <Preview result={result} spec={spec} />
-                <Text size="xs" c="dimmed" ta="center" mt="sm">
-                  Dashed lines show the measured crown and chin. Preview is to scale for {fmtMm(spec.w)} × {fmtMm(spec.h)}.
-                </Text>
-              </Card>
-              <Card withBorder padding="lg" mt="lg">
-                <Title order={2} size="h5" mb="sm">
-                  Photo size
-                </Title>
-                <SizePicker mode={mode} setMode={setMode} value={key} setValue={setKey} spec={spec} />
-              </Card>
+              <Stack gap="lg">
+                <Card withBorder padding="lg" pos="relative">
+                  <LoadingOverlay visible={busy} overlayProps={{ blur: 2 }} />
+                  <Preview result={result} spec={spec} edits={edits} setEdits={setEdits} />
+                  <Toolbar setEdits={setEdits} />
+                  <Text size="xs" c="dimmed" ta="center" mt="xs">
+                    Drag the photo to move it, scroll to zoom. Dashed lines show the measured crown and chin. Preview is to scale for{' '}
+                    {fmtMm(spec.w)} × {fmtMm(spec.h)}.
+                  </Text>
+                </Card>
+                <Adjust edits={edits} setEdits={setEdits} />
+              </Stack>
             </Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}>
               <Stack gap="lg">
+                <Card withBorder padding="lg">
+                  <Title order={2} size="h5" mb="sm">
+                    Photo size
+                  </Title>
+                  <SizePicker mode={mode} setMode={setMode} value={key} setValue={setKey} spec={spec} />
+                </Card>
                 <Checks checks={result?.checks ?? []} busy={busy} />
-                <Adjust edits={edits} setEdits={setEdits} />
                 <Download result={result} label={mode === 'size' ? key : key.replace(/\W+/g, '-')} onClear={clearAll} backupFailed={backupFailed} />
               </Stack>
             </Grid.Col>
@@ -267,8 +280,50 @@ function Upload({ onDrop, busy }: { onDrop: (f: File[]) => void; busy: boolean }
   );
 }
 
-function Preview({ result, spec }: { result: ReturnType<typeof render> | null; spec: Spec }) {
+type SetEdits = Dispatch<SetStateAction<Edits>>;
+
+const clampEdit = (key: keyof Edits, v: number) => {
+  const s = SLIDERS.find((x) => x.key === key)!;
+  return Math.min(s.max, Math.max(s.min, +v.toFixed(3)));
+};
+
+const TOOLS: { label: string; icon: typeof IconZoomIn; key: keyof Edits; step: number }[] = [
+  { label: 'Zoom out', icon: IconZoomOut, key: 'zoom', step: -0.02 },
+  { label: 'Zoom in', icon: IconZoomIn, key: 'zoom', step: 0.02 },
+  { label: 'Tilt left', icon: IconRotate, key: 'rotate', step: -0.5 },
+  { label: 'Tilt right', icon: IconRotateClockwise, key: 'rotate', step: 0.5 },
+  { label: 'Darker', icon: IconBrightnessDown, key: 'brightness', step: -5 },
+  { label: 'Brighter', icon: IconBrightnessUp, key: 'brightness', step: 5 },
+];
+
+function Toolbar({ setEdits }: { setEdits: SetEdits }) {
+  return (
+    <Group justify="center" gap={4} mt="md" wrap="wrap" role="toolbar" aria-label="Edit photo">
+      {TOOLS.map((t) => (
+        <Tooltip key={t.label} label={t.label} withArrow>
+          <ActionIcon
+            variant="light"
+            size="lg"
+            aria-label={t.label}
+            onClick={() => setEdits((e) => ({ ...e, [t.key]: clampEdit(t.key, (e[t.key] as number) + t.step) }))}
+          >
+            <t.icon size={20} />
+          </ActionIcon>
+        </Tooltip>
+      ))}
+      <Tooltip label="Undo all edits" withArrow>
+        <ActionIcon variant="default" size="lg" aria-label="Undo all edits" onClick={() => setEdits(DEFAULT_EDITS)}>
+          <IconArrowBackUp size={20} />
+        </ActionIcon>
+      </Tooltip>
+    </Group>
+  );
+}
+
+function Preview({ result, spec, edits, setEdits }: { result: ReturnType<typeof render> | null; spec: Spec; edits: Edits; setEdits: SetEdits }) {
   const ref = useRef<HTMLCanvasElement>(null);
+  const box = useRef<HTMLDivElement>(null);
+  const drag = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
   useEffect(() => {
     const c = ref.current;
     if (!c || !result) return;
@@ -277,10 +332,46 @@ function Preview({ result, spec }: { result: ReturnType<typeof render> | null; s
     c.getContext('2d')!.drawImage(result.canvas, 0, 0);
   }, [result]);
 
+  // React wheel listeners are passive, so we need a native one to stop the page from scrolling.
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      setEdits((p) => ({ ...p, zoom: clampEdit('zoom', p.zoom - Math.sign(e.deltaY) * 0.01) }));
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [setEdits]);
+
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    if (!d) return;
+    const mmPerPx = spec.w / e.currentTarget.clientWidth;
+    setEdits((p) => ({
+      ...p,
+      offsetX: clampEdit('offsetX', d.ox + (e.clientX - d.x) * mmPerPx),
+      offsetY: clampEdit('offsetY', d.oy + (e.clientY - d.y) * mmPerPx),
+    }));
+  };
+
   const headOk = result?.checks.find((c) => c.id === 'head')?.status === 'pass';
   const line = headOk ? 'var(--mantine-color-teal-6)' : 'var(--mantine-color-red-6)';
   return (
-    <Box pos="relative" mx="auto" maw={340} style={{ aspectRatio: `${spec.w} / ${spec.h}`, boxShadow: 'var(--mantine-shadow-md)' }}>
+    <Box
+      ref={box}
+      pos="relative"
+      mx="auto"
+      maw={340}
+      style={{ aspectRatio: `${spec.w} / ${spec.h}`, boxShadow: 'var(--mantine-shadow-md)', cursor: 'grab', touchAction: 'none' }}
+      onPointerDown={(e) => {
+        e.currentTarget.setPointerCapture(e.pointerId);
+        drag.current = { x: e.clientX, y: e.clientY, ox: edits.offsetX, oy: edits.offsetY };
+      }}
+      onPointerMove={onPointerMove}
+      onPointerUp={() => (drag.current = null)}
+      onPointerCancel={() => (drag.current = null)}
+    >
       <canvas ref={ref} style={{ width: '100%', height: '100%', display: 'block' }} aria-label="Passport photo preview" />
       <svg viewBox={`0 0 ${spec.w} ${spec.h}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} aria-hidden>
         <line x1={spec.w / 2} x2={spec.w / 2} y1={0} y2={spec.h} stroke="#fff" strokeOpacity={0.7} strokeWidth={0.15} strokeDasharray="0.8 0.8" />
