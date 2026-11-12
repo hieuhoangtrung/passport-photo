@@ -23,6 +23,7 @@ import {
   Title,
 } from '@mantine/core';
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
+import { useMediaQuery } from '@mantine/hooks';
 import {
   IconAlertTriangle,
   IconBulb,
@@ -190,7 +191,7 @@ export default function App() {
                   <Preview result={result} spec={spec} edits={edits} setEdits={setEdits} />
                   <Toolbar setEdits={setEdits} />
                   <Text size="xs" c="dimmed" ta="center" mt="xs">
-                    Drag the photo to move it, scroll to zoom. Dashed lines show the measured crown and chin. Preview is to scale for{' '}
+                    Drag to move, pinch or scroll to zoom. Dashed lines show the measured crown and chin. Preview is to scale for{' '}
                     {fmtMm(spec.w)} × {fmtMm(spec.h)}.
                   </Text>
                 </Card>
@@ -344,7 +345,43 @@ function Preview({ result, spec, edits, setEdits }: { result: ReturnType<typeof 
     return () => el.removeEventListener('wheel', onWheel);
   }, [setEdits]);
 
+  // Active pointers, for pinch to zoom with two fingers.
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
+  const pinch = useRef<{ dist: number; zoom: number } | null>(null);
+  const spread = () => {
+    const [a, b] = [...pointers.current.values()];
+    return Math.hypot(a.x - b.x, a.y - b.y);
+  };
+
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // pointer already gone
+    }
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.current.size === 2) {
+      drag.current = null;
+      pinch.current = { dist: spread(), zoom: edits.zoom };
+    } else if (pointers.current.size === 1) {
+      drag.current = { x: e.clientX, y: e.clientY, ox: edits.offsetX, oy: edits.offsetY };
+    }
+  };
+
+  const onPointerEnd = (e: React.PointerEvent<HTMLDivElement>) => {
+    pointers.current.delete(e.pointerId);
+    pinch.current = null;
+    drag.current = null; // lift all fingers before dragging again, so the photo does not jump
+  };
+
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (pointers.current.has(e.pointerId)) pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const p = pinch.current;
+    if (p && pointers.current.size === 2) {
+      const zoom = clampEdit('zoom', (p.zoom * spread()) / p.dist);
+      setEdits((s) => ({ ...s, zoom }));
+      return;
+    }
     const d = drag.current;
     if (!d) return;
     const mmPerPx = spec.w / e.currentTarget.clientWidth;
@@ -364,13 +401,10 @@ function Preview({ result, spec, edits, setEdits }: { result: ReturnType<typeof 
       mx="auto"
       maw={340}
       style={{ aspectRatio: `${spec.w} / ${spec.h}`, boxShadow: 'var(--mantine-shadow-md)', cursor: 'grab', touchAction: 'none' }}
-      onPointerDown={(e) => {
-        e.currentTarget.setPointerCapture(e.pointerId);
-        drag.current = { x: e.clientX, y: e.clientY, ox: edits.offsetX, oy: edits.offsetY };
-      }}
+      onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
-      onPointerUp={() => (drag.current = null)}
-      onPointerCancel={() => (drag.current = null)}
+      onPointerUp={onPointerEnd}
+      onPointerCancel={onPointerEnd}
     >
       <canvas ref={ref} style={{ width: '100%', height: '100%', display: 'block' }} aria-label="Passport photo preview" />
       <svg viewBox={`0 0 ${spec.w} ${spec.h}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} aria-hidden>
@@ -495,6 +529,8 @@ function Checks({ checks, busy }: { checks: Check[]; busy: boolean }) {
 }
 
 function Adjust({ edits, setEdits }: { edits: Edits; setEdits: (e: Edits) => void }) {
+  // Sliders only for big screens or mouse users; phones use the photo toolbar and gestures.
+  const showSliders = useMediaQuery('(min-width: 48em), (pointer: fine)', true, { getInitialValueInEffect: false });
   return (
     <Card withBorder padding="lg">
       <Group justify="space-between" mb="sm">
@@ -507,25 +543,28 @@ function Adjust({ edits, setEdits }: { edits: Edits; setEdits: (e: Edits) => voi
       </Group>
       <Text size="xs" c="dimmed" mb="md">
         We crop and straighten automatically. Checks run again after each change.
+        {!showSliders && ' Use the buttons under the photo, drag to move and pinch to zoom.'}
       </Text>
-      <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="lg" verticalSpacing="md">
-        {SLIDERS.map((s) => (
-          <div key={s.key}>
-            <Text size="sm" mb={4} id={`lbl-${s.key}`}>
-              {s.label}
-            </Text>
-            <Slider
-              aria-labelledby={`lbl-${s.key}`}
-              min={s.min}
-              max={s.max}
-              step={s.step}
-              value={edits[s.key] as number}
-              label={(v) => `${+v.toFixed(2)}${s.unit}`}
-              onChange={(v) => setEdits({ ...edits, [s.key]: v })}
-            />
-          </div>
-        ))}
-      </SimpleGrid>
+      {showSliders && (
+        <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="lg" verticalSpacing="md">
+          {SLIDERS.map((s) => (
+            <div key={s.key}>
+              <Text size="sm" mb={4} id={`lbl-${s.key}`}>
+                {s.label}
+              </Text>
+              <Slider
+                aria-labelledby={`lbl-${s.key}`}
+                min={s.min}
+                max={s.max}
+                step={s.step}
+                value={edits[s.key] as number}
+                label={(v) => `${+v.toFixed(2)}${s.unit}`}
+                onChange={(v) => setEdits({ ...edits, [s.key]: v })}
+              />
+            </div>
+          ))}
+        </SimpleGrid>
+      )}
       <Switch
         mt="lg"
         checked={edits.whiteBg}
