@@ -3,7 +3,9 @@ import { IconAlertTriangle, IconPlus, IconPrinter, IconTrash } from '@tabler/ico
 import { useEffect, useMemo, useRef } from 'react';
 import type { Edits } from './checks';
 import type { Detection } from './detect';
-import { SIZES, type Spec } from './formats';
+import { fmtSize, SIZES, type Spec } from './formats';
+import { useI18n } from './i18n';
+import type { MessageKey } from './i18n/en';
 import { drawSheet, pack, PAPERS } from './print';
 import { downloadJpeg, render, type Result } from './render';
 
@@ -24,6 +26,7 @@ type Props = {
 };
 
 export function PrintSheet({ src, det, edits, spec, current, settings, setSettings }: Props) {
+  const { t } = useI18n();
   const { rows } = settings;
   const paper = PAPERS[settings.paper] ?? PAPERS['6x4'];
   const specOf = (key: string) => (key === 'current' ? spec : (SIZES[key]?.spec ?? spec));
@@ -51,23 +54,23 @@ export function PrintSheet({ src, det, edits, spec, current, settings, setSettin
     setSettings({ ...settings, rows: rows.map((r, j) => (j === i ? { ...r, ...patch } : r)) });
 
   const sizeOptions = [
-    { value: 'current', label: `Your photo (${spec.w} × ${spec.h} mm)` },
+    { value: 'current', label: t('print.yourPhoto', { size: fmtSize(spec) }) },
     ...Object.entries(SIZES).map(([value, s]) => ({ value, label: s.label })),
   ];
 
   return (
     <Card withBorder padding="lg">
       <Title order={2} size="h5" mb={4}>
-        Print sheet
+        {t('print.title')}
       </Title>
       <Text size="sm" c="dimmed" mb="md">
-        Put one or more photo sizes on one sheet. Leave copies empty to fit as many as possible.
+        {t('print.hint')}
       </Text>
       <Grid gap="lg">
         <Grid.Col span={{ base: 12, md: 6 }}>
           <Stack gap="md">
             <Select
-              label="Paper size"
+              label={t('print.paper')}
               allowDeselect={false}
               data={Object.entries(PAPERS).map(([value, p]) => ({ value, label: p.label }))}
               value={settings.paper}
@@ -83,7 +86,7 @@ export function PrintSheet({ src, det, edits, spec, current, settings, setSettin
                   <Group gap="xs" align="flex-end" wrap="nowrap">
                     <Select
                       style={{ flex: 1, minWidth: 0 }}
-                      label={`Photo size ${i + 1}`}
+                      label={t('print.photoSize', { n: i + 1 })}
                       allowDeselect={false}
                       data={sizeOptions}
                       value={r.key}
@@ -91,8 +94,8 @@ export function PrintSheet({ src, det, edits, spec, current, settings, setSettin
                     />
                     <NumberInput
                       w={96}
-                      label="Copies"
-                      placeholder="Max"
+                      label={t('print.copies')}
+                      placeholder={t('print.max')}
                       min={1}
                       max={200}
                       allowDecimal={false}
@@ -104,7 +107,7 @@ export function PrintSheet({ src, det, edits, spec, current, settings, setSettin
                       color="red"
                       size="lg"
                       mb={2}
-                      aria-label={`Remove photo size ${i + 1}`}
+                      aria-label={t('print.remove', { n: i + 1 })}
                       disabled={rows.length === 1}
                       onClick={() => setSettings({ ...settings, rows: rows.filter((_, j) => j !== i) })}
                     >
@@ -113,11 +116,11 @@ export function PrintSheet({ src, det, edits, spec, current, settings, setSettin
                   </Group>
                   <Group gap="xs" mt={4}>
                     <Text size="xs" c="dimmed">
-                      {layout.placed[String(i)] ?? 0} on sheet
+                      {t('print.onSheet', { n: layout.placed[String(i)] ?? 0 })}
                     </Text>
                     {failsHere.length > 0 && (
-                      <Badge size="xs" color="red" variant="light" title={failsHere.map((c) => c.detail).join(' ')}>
-                        At this size: {failsHere.map((c) => c.label.toLowerCase()).join(', ')}
+                      <Badge size="xs" color="red" variant="light" title={failsHere.map((c) => t(c.msg, c.vars)).join(' ')}>
+                        {t('print.atSize', { list: failsHere.map((c) => t(`check.${c.id}` as MessageKey)).join(', ') })}
                       </Badge>
                     )}
                   </Group>
@@ -129,7 +132,7 @@ export function PrintSheet({ src, det, edits, spec, current, settings, setSettin
               leftSection={<IconPlus size={16} />}
               onClick={() => setSettings({ ...settings, rows: [...rows, { key: '30x40', count: 2 }] })}
             >
-              Add another size
+              {t('print.add')}
             </Button>
           </Stack>
         </Grid.Col>
@@ -138,15 +141,15 @@ export function PrintSheet({ src, det, edits, spec, current, settings, setSettin
             <canvas
               ref={ref}
               role="img"
-              aria-label={`Print preview: ${layout.places.length} photos on ${paper.label}`}
+              aria-label={t('print.count', { n: layout.places.length, paper: paper.label })}
               style={{ maxWidth: '100%', maxHeight: 460, margin: '0 auto', display: 'block', boxShadow: 'var(--mantine-shadow-md)', borderRadius: 4 }}
             />
             <Text size="sm" ta="center">
-              {layout.places.length} photos on {paper.label}
+              {t('print.count', { n: layout.places.length, paper: paper.label })}
             </Text>
             {layout.dropped > 0 && (
               <Alert color="yellow" variant="light" icon={<IconAlertTriangle />}>
-                {layout.dropped} {layout.dropped === 1 ? 'photo does' : 'photos do'} not fit. Use fewer copies or bigger paper.
+                {t('print.overflow', { n: layout.dropped })}
               </Alert>
             )}
             <Button
@@ -156,10 +159,10 @@ export function PrintSheet({ src, det, edits, spec, current, settings, setSettin
                 downloadJpeg(drawSheet(layout, byId, SHEET_DPI / 25.4), SHEET_DPI, `passport-photos-${settings.paper}-print.jpg`)
               }
             >
-              Download print sheet ({SHEET_DPI} dpi JPEG)
+              {t('print.download', { dpi: SHEET_DPI })}
             </Button>
             <Text size="xs" c="dimmed" ta="center">
-              Print at 100% / actual size, not "fit to page". Grey lines are cut lines.
+              {t('print.note')}
             </Text>
           </Stack>
         </Grid.Col>

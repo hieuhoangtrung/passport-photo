@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "copy-wasm": "rm -rf public/mediapipe && cp -R node_modules/@mediapipe/tasks-vision/wasm public/mediapipe",
+    "copy-wasm": "rm -rf public/mediapipe && mkdir -p public/mediapipe && cp node_modules/@mediapipe/tasks-vision/wasm/vision_wasm_internal.* public/mediapipe/",
     "predev": "npm run copy-wasm",
     "prebuild": "npm run copy-wasm",
     "dev": "vite",
@@ -30,5 +30,10 @@
     "typescript": "^7.0.2",
     "vite": "^8.3.7",
     "vitest": "^5.1.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hieuhoangtrung/passport-photo.git"
   }
 }

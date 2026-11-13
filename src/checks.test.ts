@@ -26,7 +26,7 @@ describe('autoTransform', () => {
   it('puts head at mid range, eyes centred and level, even for a tilted photo', () => {
     for (const tilt of [0, 8]) {
       const f = face(tilt);
-      const spec = COUNTRIES.Australia;
+      const spec = COUNTRIES.AU;
       const t = autoTransform(f, spec, DEFAULT_EDITS);
       const crown = apply(t, f.crown);
       const chin = apply(t, f.lm[LM.chin]);
@@ -40,7 +40,7 @@ describe('autoTransform', () => {
   });
 
   it('uses the eye line rule for US photos', () => {
-    const t = autoTransform(face(), COUNTRIES['United States'], DEFAULT_EDITS);
+    const t = autoTransform(face(), COUNTRIES.US, DEFAULT_EDITS);
     expect(50.8 - t.o.y).toBeCloseTo((28.6 + 34.9) / 2, 5);
   });
 });

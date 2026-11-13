@@ -1,5 +1,6 @@
 import type { Spec } from './formats';
-import { fmtMm } from './formats';
+import { fmtMm, fmtRange } from './formats';
+import type { MessageKey } from './i18n/en';
 
 export type Pt = { x: number; y: number };
 export type Mask = { data: Float32Array; w: number; h: number }; // person confidence 0..1
@@ -16,7 +17,8 @@ export type Edits = {
 // out(mm) = o + s * R(theta) * (p - pivot)
 export type Xform = { s: number; theta: number; pivot: Pt; o: Pt };
 export type Status = 'pass' | 'warn' | 'fail';
-export type Check = { id: string; status: Status; label: string; detail: string };
+// label = t(`check.${id}`), detail = t(msg, vars): checks stay language-free.
+export type Check = { id: string; status: Status; msg: MessageKey; vars?: Record<string, string | number> };
 
 export const DEFAULT_EDITS: Edits = {
   zoom: 1,
@@ -96,11 +98,11 @@ export function autoTransform(face: Face, spec: Spec, e: Edits): Xform {
   return { s, theta, pivot, o: { x: spec.w / 2 + e.offsetX, y: eyeY + e.offsetY } };
 }
 
-const check = (id: string, ok: boolean | Status, label: string, detail: string): Check => ({
+const check = (id: string, ok: boolean | Status, msg: MessageKey, vars?: Check['vars']): Check => ({
   id,
   status: typeof ok === 'string' ? ok : ok ? 'pass' : 'fail',
-  label,
-  detail,
+  msg,
+  vars,
 });
 
 export function geometryChecks(
@@ -111,17 +113,8 @@ export function geometryChecks(
   src: { w: number; h: number },
   whiteBg: boolean,
 ): Check[] {
-  if (faceCount === 0 || !face || !t) {
-    return [check('face', false, 'Face found', 'No face found. Use a clear, front-facing photo.')];
-  }
-  const out: Check[] = [
-    check(
-      'one',
-      faceCount === 1,
-      'Only you in the photo',
-      faceCount === 1 ? 'One face found.' : `${faceCount} faces found. Only one person is allowed.`,
-    ),
-  ];
+  if (faceCount === 0 || !face || !t) return [check('face', false, 'msg.noFace')];
+  const out: Check[] = [check('one', faceCount === 1, faceCount === 1 ? 'msg.oneFace' : 'msg.manyFaces', { n: faceCount })];
   const P = (i: number) => apply(t, face.lm[i]);
   const crown = apply(t, face.crown);
   const chin = P(LM.chin);
@@ -130,62 +123,42 @@ export function geometryChecks(
   const eyes = mid(eyeL, eyeR);
 
   const head = len(sub(chin, crown));
-  out.push(
-    check(
-      'head',
-      head >= spec.headMin && head <= spec.headMax,
-      'Head size (chin to crown)',
-      `${fmtMm(head)} - must be ${spec.headMin}–${spec.headMax} mm.`,
-    ),
-  );
+  out.push(check('head', head >= spec.headMin && head <= spec.headMax, 'msg.head', { value: fmtMm(head), range: fmtRange(spec.headMin, spec.headMax) }));
   if (spec.eyeMin !== undefined && spec.eyeMax !== undefined) {
     const eyeH = spec.h - eyes.y;
-    out.push(
-      check(
-        'eyeline',
-        eyeH >= spec.eyeMin && eyeH <= spec.eyeMax,
-        'Eye height',
-        `${fmtMm(eyeH)} from bottom - must be ${spec.eyeMin}–${spec.eyeMax} mm.`,
-      ),
-    );
+    out.push(check('eyeline', eyeH >= spec.eyeMin && eyeH <= spec.eyeMax, 'msg.eyeline', { value: fmtMm(eyeH), range: fmtRange(spec.eyeMin, spec.eyeMax) }));
   }
   const inFrame = crown.y >= 0.5 && chin.y <= spec.h && P(LM.sideL).x >= 0 && P(LM.sideR).x <= spec.w;
-  out.push(check('frame', inFrame, 'Whole head in frame', inFrame ? 'Head and chin are fully visible.' : 'Part of the head is cut off.'));
+  out.push(check('frame', inFrame, inFrame ? 'msg.frameOk' : 'msg.frameCut'));
 
   const tilt = deg(Math.atan2(eyeR.y - eyeL.y, eyeR.x - eyeL.x));
-  out.push(check('tilt', Math.abs(tilt) <= 3, 'Head straight, not tilted', `Tilt ${tilt.toFixed(1)}° - must be within 3°.`));
+  out.push(check('tilt', Math.abs(tilt) <= 3, 'msg.tilt', { value: `${tilt.toFixed(1)}°` }));
 
   const off = eyes.x - spec.w / 2;
-  out.push(check('center', Math.abs(off) <= 2, 'Face centred', `${fmtMm(Math.abs(off))} off centre - must be within 2 mm.`));
+  out.push(check('center', Math.abs(off) <= 2, 'msg.center', { value: fmtMm(Math.abs(off)) }));
 
   const a = P(LM.sideL);
   const b = P(LM.sideR);
   const yaw = (P(LM.nose).x - a.x) / (b.x - a.x);
-  out.push(
-    check(
-      'yaw',
-      yaw >= 0.38 && yaw <= 0.62,
-      'Facing the camera',
-      yaw >= 0.38 && yaw <= 0.62 ? 'Head is turned to the front.' : 'Head is turned to one side. Face the camera.',
-    ),
-  );
+  const front = yaw >= 0.38 && yaw <= 0.62;
+  out.push(check('yaw', front, front ? 'msg.yawOk' : 'msg.yawBad'));
 
   const bs = (k: string) => face.blend[k] ?? 0;
   const eyesOpen = Math.max(bs('eyeBlinkLeft'), bs('eyeBlinkRight')) < 0.5;
-  out.push(check('eyes', eyesOpen, 'Eyes open', eyesOpen ? 'Both eyes are open.' : 'Eyes look closed. Keep both eyes open.'));
+  out.push(check('eyes', eyesOpen, eyesOpen ? 'msg.eyesOk' : 'msg.eyesClosed'));
 
   const gaze = Math.max(
     ...['LookInLeft', 'LookInRight', 'LookOutLeft', 'LookOutRight', 'LookUpLeft', 'LookUpRight', 'LookDownLeft', 'LookDownRight'].map(
       (k) => bs('eye' + k),
     ),
   );
-  out.push(check('gaze', gaze < 0.6 ? 'pass' : 'warn', 'Looking at the camera', gaze < 0.6 ? 'Eyes look at the camera.' : 'Eyes look away. Look straight at the camera.'));
+  out.push(check('gaze', gaze < 0.6 ? 'pass' : 'warn', gaze < 0.6 ? 'msg.gazeOk' : 'msg.gazeAway'));
 
   const neutral = Math.max(bs('mouthSmileLeft'), bs('mouthSmileRight')) < 0.5 && bs('jawOpen') < 0.3;
-  out.push(check('expr', neutral, 'Neutral expression, mouth closed', neutral ? 'Expression is neutral.' : 'Do not smile or open your mouth.'));
+  out.push(check('expr', neutral, neutral ? 'msg.exprOk' : 'msg.exprBad'));
 
   const dpi = 25.4 / t.s;
-  out.push(check('res', dpi >= 300, 'Image quality', `${Math.round(dpi)} dpi from your photo - needs 300 dpi or more.`));
+  out.push(check('res', dpi >= 300, 'msg.res', { dpi: Math.round(dpi) }));
 
   const corners = [
     { x: 0, y: 0 },
@@ -194,14 +167,7 @@ export function geometryChecks(
     { x: spec.w, y: spec.h },
   ].map((q) => invert(t, q));
   const covered = corners.every((p) => p.x >= 0 && p.y >= 0 && p.x <= src.w && p.y <= src.h);
-  out.push(
-    check(
-      'cover',
-      covered ? 'pass' : whiteBg ? 'warn' : 'fail',
-      'Photo fills the frame',
-      covered ? 'No empty edges.' : 'Your photo is too tight. Take it from further away, with shoulders visible.',
-    ),
-  );
+  out.push(check('cover', covered ? 'pass' : whiteBg ? 'warn' : 'fail', covered ? 'msg.coverOk' : 'msg.coverBad'));
   return out;
 }
 
@@ -253,27 +219,20 @@ export function pixelChecks(p: PixelInput): Check[] {
   if (n > 100) {
     const mean = sum / n;
     const std = Math.sqrt(Math.max(0, sq / n - mean * mean));
-    out.push(check('bgLight', mean >= 160, 'Light background', mean >= 160 ? 'Background is light.' : 'Background is too dark. Use a white or light grey wall.'));
-    out.push(
-      check('bgPlain', std <= 20, 'Plain background, no shadows', std <= 20 ? 'Background is plain.' : 'Background has patterns, objects or shadows.'),
-    );
+    out.push(check('bgLight', mean >= 160, mean >= 160 ? 'msg.bgLightOk' : 'msg.bgDark'));
+    out.push(check('bgPlain', std <= 20, std <= 20 ? 'msg.bgPlainOk' : 'msg.bgBusy'));
   }
 
   const f = boxStats(p, p.face);
   const exposure: Status = f.mean < 70 || f.mean > 220 ? 'fail' : f.clip > 0.08 ? 'warn' : 'pass';
   out.push(
-    check(
-      'exposure',
-      exposure,
-      'Brightness',
-      f.mean < 70 ? 'Face is too dark.' : f.mean > 220 ? 'Face is too bright.' : f.clip > 0.08 ? 'Some glare on the face.' : 'Face is well exposed.',
-    ),
+    check('exposure', exposure, f.mean < 70 ? 'msg.tooDark' : f.mean > 220 ? 'msg.tooBright' : f.clip > 0.08 ? 'msg.glare' : 'msg.exposureOk'),
   );
   const l = boxStats(p, p.cheekL).mean;
   const r = boxStats(p, p.cheekR).mean;
   const even = Math.abs(l - r) / Math.max(l, r, 1) <= 0.25;
-  out.push(check('light', even ? 'pass' : 'warn', 'Even light on face', even ? 'No strong shadows on the face.' : 'One side of the face is darker. Face the light.'));
-  out.push(check('colour', f.sat >= 10, 'Colour photo', f.sat >= 10 ? 'Photo is in colour.' : 'Photo looks black and white. Use a colour photo.'));
+  out.push(check('light', even ? 'pass' : 'warn', even ? 'msg.lightOk' : 'msg.lightUneven'));
+  out.push(check('colour', f.sat >= 10, f.sat >= 10 ? 'msg.colourOk' : 'msg.grey'));
   return out;
 }
 
