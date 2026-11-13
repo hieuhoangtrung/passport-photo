@@ -1,6 +1,6 @@
 import { apply, autoTransform, geometryChecks, LM, pixelChecks, setJpegDpi, type Check, type Edits, type Pt, type Xform } from './checks';
 import type { Detection } from './detect';
-import type { Spec } from './formats';
+import { bgColorFor, type Spec } from './formats';
 
 export const DPI = 600;
 const PX_PER_MM = DPI / 25.4;
@@ -34,7 +34,8 @@ export function render(src: HTMLCanvasElement, det: Detection, spec: Spec, e: Ed
   const k = PX_PER_MM;
   const out = canvas(spec.w * k, spec.h * k);
   const ctx = out.getContext('2d', { willReadFrequently: true })!;
-  ctx.fillStyle = '#fff';
+  // Replaced background gets the country's colour; otherwise white shows only at uncovered edges.
+  ctx.fillStyle = e.replaceBg ? bgColorFor(spec, e.bgColor) : '#fff';
   ctx.fillRect(0, 0, out.width, out.height);
 
   const { face } = det;
@@ -50,7 +51,7 @@ export function render(src: HTMLCanvasElement, det: Detection, spec: Spec, e: Ed
     const mctx = m.getContext('2d', { willReadFrequently: true })!;
     setXform(mctx, xf, k, src.width, src.height, det.maskCanvas);
     mctx.drawImage(det.maskCanvas, 0, 0);
-    if (e.whiteBg) {
+    if (e.replaceBg) {
       // keep only the person (alpha stays = mask), then put it on white
       mctx.globalCompositeOperation = 'source-in';
       mctx.filter = filter;
@@ -60,7 +61,7 @@ export function render(src: HTMLCanvasElement, det: Detection, spec: Spec, e: Ed
     }
     maskData = alpha(mctx, m);
   }
-  if (!e.whiteBg || !det.maskCanvas) {
+  if (!e.replaceBg || !det.maskCanvas) {
     ctx.filter = filter;
     setXform(ctx, xf, k, src.width, src.height, src);
     ctx.drawImage(src, 0, 0);
@@ -68,7 +69,7 @@ export function render(src: HTMLCanvasElement, det: Detection, spec: Spec, e: Ed
     ctx.filter = 'none';
   }
 
-  const checks = geometryChecks(det.faceCount, face, spec, t, { w: src.width, h: src.height }, e.whiteBg);
+  const checks = geometryChecks(det.faceCount, face, spec, t, { w: src.width, h: src.height }, e.replaceBg);
   if (face && t) {
     const P = (i: number) => {
       const p = apply(t, face.lm[i]);
@@ -86,6 +87,7 @@ export function render(src: HTMLCanvasElement, det: Detection, spec: Spec, e: Ed
         cheekL: box(P(LM.cheekL), fw * 0.06),
         cheekR: box(P(LM.cheekR), fw * 0.06),
         chinY: P(LM.chin).y,
+        want: spec.bg,
       }),
     );
   }

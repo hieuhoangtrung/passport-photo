@@ -1,4 +1,4 @@
-import type { Spec } from './formats';
+import type { BgClass, Spec } from './formats';
 import { fmtMm, fmtRange } from './formats';
 import type { MessageKey } from './i18n/en';
 
@@ -12,7 +12,8 @@ export type Edits = {
   rotate: number;
   brightness: number;
   contrast: number;
-  whiteBg: boolean;
+  replaceBg: boolean;
+  bgColor: string | null; // null = the colour the country asks for
 };
 // out(mm) = o + s * R(theta) * (p - pivot)
 export type Xform = { s: number; theta: number; pivot: Pt; o: Pt };
@@ -27,7 +28,8 @@ export const DEFAULT_EDITS: Edits = {
   rotate: 0,
   brightness: 100,
   contrast: 100,
-  whiteBg: false,
+  replaceBg: true,
+  bgColor: null,
 };
 
 // MediaPipe face mesh indices
@@ -111,7 +113,7 @@ export function geometryChecks(
   spec: Spec,
   t: Xform | null,
   src: { w: number; h: number },
-  whiteBg: boolean,
+  replaceBg: boolean,
 ): Check[] {
   if (faceCount === 0 || !face || !t) return [check('face', false, 'msg.noFace')];
   const out: Check[] = [check('one', faceCount === 1, faceCount === 1 ? 'msg.oneFace' : 'msg.manyFaces', { n: faceCount })];
@@ -167,7 +169,7 @@ export function geometryChecks(
     { x: spec.w, y: spec.h },
   ].map((q) => invert(t, q));
   const covered = corners.every((p) => p.x >= 0 && p.y >= 0 && p.x <= src.w && p.y <= src.h);
-  out.push(check('cover', covered ? 'pass' : whiteBg ? 'warn' : 'fail', covered ? 'msg.coverOk' : 'msg.coverBad'));
+  out.push(check('cover', covered ? 'pass' : replaceBg ? 'warn' : 'fail', covered ? 'msg.coverOk' : 'msg.coverBad'));
   return out;
 }
 
@@ -181,6 +183,7 @@ export type PixelInput = {
   cheekL: Box;
   cheekR: Box;
   chinY: number;
+  want?: BgClass; // background colour the rules ask for
 };
 
 const lum = (d: Uint8ClampedArray, i: number) => 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
@@ -200,16 +203,28 @@ function boxStats(p: PixelInput, b: Box) {
   return { mean: sum / (n || 1), sat: sat / (n || 1), clip: clip / (n || 1) };
 }
 
+/** Does the measured background colour fit the country rule? Undefined when the rule says nothing special. */
+export function bgColourMsg(want: BgClass | undefined, l: number, r: number, g: number, b: number): MessageKey | undefined {
+  const grey = Math.max(r, g, b) - Math.min(r, g, b) < 18;
+  if (want === 'white') return l >= 225 && grey ? 'msg.bgColourOk' : 'msg.bgWantWhite';
+  if (want === 'grey' || want === 'cream') return l > 247 && grey ? 'msg.bgNoWhite' : 'msg.bgColourOk';
+  if (want === 'blue') return b - r >= 12 ? 'msg.bgColourOk' : 'msg.bgWantBlue';
+  return undefined;
+}
+
 export function pixelChecks(p: PixelInput): Check[] {
   const out: Check[] = [];
   // background: non-person pixels above the chin
-  let n = 0, sum = 0, sq = 0;
+  let n = 0, sum = 0, sq = 0, sr = 0, sg = 0, sb = 0;
   if (p.mask) {
     for (let y = 0; y < Math.min(p.h, p.chinY); y += 2) {
       for (let x = 0; x < p.w; x += 2) {
         const j = y * p.w + x;
         if (p.mask[j] > 50) continue;
         const l = lum(p.rgba, j * 4);
+        sr += p.rgba[j * 4];
+        sg += p.rgba[j * 4 + 1];
+        sb += p.rgba[j * 4 + 2];
         sum += l;
         sq += l * l;
         n++;
@@ -221,6 +236,8 @@ export function pixelChecks(p: PixelInput): Check[] {
     const std = Math.sqrt(Math.max(0, sq / n - mean * mean));
     out.push(check('bgLight', mean >= 160, mean >= 160 ? 'msg.bgLightOk' : 'msg.bgDark'));
     out.push(check('bgPlain', std <= 20, std <= 20 ? 'msg.bgPlainOk' : 'msg.bgBusy'));
+    const colour = bgColourMsg(p.want, mean, sr / n, sg / n, sb / n);
+    if (colour) out.push(check('bgColour', colour === 'msg.bgColourOk' ? 'pass' : 'warn', colour));
   }
 
   const f = boxStats(p, p.face);

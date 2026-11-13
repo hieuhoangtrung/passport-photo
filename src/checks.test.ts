@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { apply, autoTransform, DEFAULT_EDITS, findCrown, geometryChecks, invert, LM, pixelChecks, setJpegDpi, type Face, type Pt } from './checks';
+import { apply, autoTransform, bgColourMsg, DEFAULT_EDITS, findCrown, geometryChecks, invert, LM, pixelChecks, setJpegDpi, type Face, type Pt } from './checks';
 import { COUNTRIES, SIZES } from './formats';
 
 // Synthetic upright face in a 1000x1400 photo: eyes at y=500, chin at y=750, forehead landmark at y=350.
@@ -107,4 +107,16 @@ it('setJpegDpi writes JFIF density', () => {
   b.set([0xff, 0xd8, 0xff, 0xe0, 0, 16, 74, 70, 73, 70, 0, 1, 1, 0, 0, 1, 0, 1]);
   setJpegDpi(b, 600);
   expect([...b.slice(13, 18)]).toEqual([1, 2, 88, 2, 88]);
+});
+
+describe('bgColourMsg', () => {
+  it('matches the background colour to the country rule', () => {
+    expect(bgColourMsg('white', 250, 250, 250, 250)).toBe('msg.bgColourOk');
+    expect(bgColourMsg('white', 200, 200, 200, 200)).toBe('msg.bgWantWhite');
+    expect(bgColourMsg('grey', 252, 252, 252, 252)).toBe('msg.bgNoWhite');
+    expect(bgColourMsg('grey', 228, 227, 229, 232)).toBe('msg.bgColourOk');
+    expect(bgColourMsg('blue', 222, 207, 226, 243)).toBe('msg.bgColourOk');
+    expect(bgColourMsg('blue', 250, 250, 250, 250)).toBe('msg.bgWantBlue');
+    expect(bgColourMsg(undefined, 250, 250, 250, 250)).toBeUndefined();
+  });
 });

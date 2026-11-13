@@ -8,7 +8,19 @@ export type Spec = {
   headMax: number;
   eyeMin?: number;
   eyeMax?: number;
+  bg?: BgClass; // required background colour, default white
 };
+
+// Background colour classes from the official rules, and the colour we paint when replacing the background.
+export type BgClass = 'white' | 'light' | 'grey' | 'cream' | 'blue';
+export const BG_COLORS: Record<BgClass, string> = {
+  white: '#ffffff',
+  light: '#ffffff',
+  grey: '#e3e5e8',
+  cream: '#f1ede3',
+  blue: '#cfe2f3',
+};
+export const bgColorFor = (spec: Spec, chosen: string | null) => chosen ?? BG_COLORS[spec.bg ?? 'white'];
 export type CountryRule = Spec & { source?: string; low?: boolean }; // low = some details not confirmed
 
 const ICAO: Spec = { w: 35, h: 45, headMin: 32, headMax: 36 };
@@ -27,7 +39,7 @@ export const SIZES: Record<string, { label: string; spec: Spec }> = {
 
 // Keyed by ISO 3166-1 alpha-2; names come from Intl.DisplayNames in the user's language.
 // Researched 2026-11: "source" only for official government pages; "low" = based on secondary sources.
-export const COUNTRIES: Record<string, CountryRule> = countries;
+export const COUNTRIES: Record<string, CountryRule> = countries as Record<string, CountryRule>; // JSON types widen "bg" to string
 
 export const DEFAULT_COUNTRY = 'AU';
 

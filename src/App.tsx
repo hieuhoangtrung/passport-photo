@@ -2,6 +2,8 @@ import {
   ActionIcon,
   Accordion,
   Alert,
+  CheckIcon,
+  ColorSwatch,
   Anchor,
   Badge,
   Box,
@@ -50,7 +52,7 @@ import {
 import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { DEFAULT_EDITS, type Check, type Edits } from './checks';
 import { detect, type Detection } from './detect';
-import { COUNTRIES, DEFAULT_COUNTRY, fmtRange, fmtSize, SIZES, specFor, type CountryRule, type Spec } from './formats';
+import { BG_COLORS, bgColorFor, COUNTRIES, DEFAULT_COUNTRY, fmtRange, fmtSize, SIZES, specFor, type CountryRule, type Spec } from './formats';
 import { LOCALES, localeForCountry, useI18n, type Locale } from './i18n';
 import type { MessageKey } from './i18n/en';
 import { browserCountry, LOCALE_KEY, parsePath, pathFor } from './route';
@@ -81,14 +83,14 @@ function loadSettings(): Settings {
 }
 
 async function toCanvas(url: string) {
-  const img = new Image();
-  img.src = url;
-  await img.decode();
-  const k = Math.min(1, MAX_SIDE / Math.max(img.naturalWidth, img.naturalHeight));
+  // createImageBitmap applies EXIF rotation and, unlike img.decode(), does not stall in background tabs.
+  const img = await createImageBitmap(await (await fetch(url)).blob());
+  const k = Math.min(1, MAX_SIDE / Math.max(img.width, img.height));
   const c = document.createElement('canvas');
-  c.width = Math.round(img.naturalWidth * k);
-  c.height = Math.round(img.naturalHeight * k);
+  c.width = Math.round(img.width * k);
+  c.height = Math.round(img.height * k);
   c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height);
+  img.close();
   return c;
 }
 
@@ -304,7 +306,7 @@ export default function App() {
                     {t('preview.hint', { size: fmtSize(spec) })}
                   </Text>
                 </Card>
-                <Adjust edits={edits} setEdits={setEdits} />
+                <Adjust edits={edits} setEdits={setEdits} spec={spec} country={country} />
               </Stack>
             </Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}>
@@ -747,7 +749,7 @@ function Checks({ checks, busy }: { checks: Check[]; busy: boolean }) {
   );
 }
 
-function Adjust({ edits, setEdits }: { edits: Edits; setEdits: (e: Edits) => void }) {
+function Adjust({ edits, setEdits, spec, country }: { edits: Edits; setEdits: (e: Edits) => void; spec: Spec; country?: string }) {
   const { t } = useI18n();
   // Sliders only for big screens or mouse users; phones use the photo toolbar and gestures.
   const showSliders = useMediaQuery('(min-width: 48em), (pointer: fine)', true, { getInitialValueInEffect: false });
@@ -787,11 +789,12 @@ function Adjust({ edits, setEdits }: { edits: Edits; setEdits: (e: Edits) => voi
       )}
       <Switch
         mt="lg"
-        checked={edits.whiteBg}
-        onChange={(e) => setEdits({ ...edits, whiteBg: e.currentTarget.checked })}
-        label={t('adjust.whiteBg')}
-        description={t('adjust.whiteBgHint')}
+        checked={edits.replaceBg}
+        onChange={(e) => setEdits({ ...edits, replaceBg: e.currentTarget.checked })}
+        label={t('adjust.replaceBg')}
+        description={t('adjust.replaceBgHint')}
       />
+      {edits.replaceBg && <BgPicker spec={spec} country={country} value={edits.bgColor} onChange={(bgColor) => setEdits({ ...edits, bgColor })} />}
     </Card>
   );
 }
@@ -858,5 +861,39 @@ function About({ country, spec }: { country?: string; spec: Spec }) {
         ))}
       </Accordion>
     </Card>
+  );
+}
+
+const SWATCHES = ['white', 'grey', 'cream', 'blue'] as const;
+
+/** Background colour choice; the country's colour is selected until the user picks another. */
+function BgPicker({ spec, country, value, onChange }: { spec: Spec; country?: string; value: string | null; onChange: (c: string | null) => void }) {
+  const { t, countryName } = useI18n();
+  const current = bgColorFor(spec, value);
+  const recommended = BG_COLORS[spec.bg ?? 'white'];
+  return (
+    <Group gap="xs" mt="sm" ms={52} role="radiogroup" aria-label={t('adjust.bgColour')}>
+      {SWATCHES.map((k) => {
+        const colour = BG_COLORS[k];
+        const name = t(`bg.${k}`);
+        const label = colour === recommended && country ? t('adjust.bgRecommended', { colour: name, country: countryName(country) }) : name;
+        return (
+          <Tooltip key={k} label={label} withArrow>
+            <ColorSwatch
+              component="button"
+              role="radio"
+              aria-checked={current === colour}
+              aria-label={label}
+              color={colour}
+              size={28}
+              style={{ cursor: 'pointer', border: '1px solid var(--mantine-color-gray-4)' }}
+              onClick={() => onChange(colour === recommended ? null : colour)}
+            >
+              {current === colour && <CheckIcon size={12} color="var(--mantine-color-teal-7)" />}
+            </ColorSwatch>
+          </Tooltip>
+        );
+      })}
+    </Group>
   );
 }
