@@ -1,6 +1,6 @@
 # Passport Photo Maker
 
-Free, open-source passport photo maker that runs in your browser. **Live: https://passport-photo-bvh.pages.dev** Upload a photo, and the app crops it to the correct size for your country, checks it against passport photo rules, and makes a print sheet.
+Free, open-source passport photo maker that runs in your browser. **Live: https://passport-photo-free.pages.dev** Upload a photo, and the app crops it to the correct size for your country, checks it against passport photo rules, and makes a print sheet.
 
 - **Private:** face detection and editing run on your device. The photo is never uploaded.
 - **Free:** no account, no watermark, no payment, no tracking.
@@ -45,7 +45,7 @@ URLs are `/{language}/{country}/`, for example `/vi/vn/`. English home is `/`.
 
 1. In the Cloudflare dashboard, go to **Workers & Pages > Create > Pages > Connect to Git** and select this repository.
 2. Build command: `npm run build`. Build output directory: `dist`.
-3. Optional: set the `SITE_URL` environment variable to your domain (for example `https://example.com`). Without it, production uses `https://passport-photo-bvh.pages.dev`.
+3. Optional: set the `SITE_URL` environment variable to your domain (for example `https://example.com`). Without it, production uses `https://passport-photo-free.pages.dev`.
 
 Each push to `main` deploys again. Preview branches are served with `noindex`.
 
