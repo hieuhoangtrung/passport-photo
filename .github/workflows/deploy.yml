@@ -1,0 +1,38 @@
+name: Test and deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+        env:
+          # Canonical URLs use the production address only for main.
+          CF_PAGES_BRANCH: ${{ github.ref_name }}
+      - name: Deploy to Cloudflare Pages
+        # Only for pushes to main in this repo; forks and pull requests have no secrets.
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo "::warning::CLOUDFLARE_API_TOKEN secret is not set, skipping deploy"; exit 0; fi
+          npx --yes wrangler@4 pages deploy dist --project-name passport-photo --branch main --commit-hash ${{ github.sha }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
