@@ -12,7 +12,7 @@ function prerender(): Plugin {
       // Canonical site address. Cloudflare Pages: production builds use SITE_URL (or the default
       // pages.dev name); preview builds use their own preview address.
       const env = process.env;
-      const origin = env.SITE_URL ?? (env.CF_PAGES_BRANCH === 'main' ? 'https://passport-photo.pages.dev' : (env.CF_PAGES_URL ?? 'http://localhost:4173'));
+      const origin = env.SITE_URL ?? (env.CF_PAGES_BRANCH === 'main' ? 'https://passport-photo-bvh.pages.dev' : (env.CF_PAGES_URL ?? 'http://localhost:4173'));
       const { module: seo } = await runnerImport<typeof import('./src/seo')>('./src/seo.ts', { configFile: false });
       const template = readFileSync('dist/index.html', 'utf8');
       const list = seo.pages(template, origin);
