@@ -32,6 +32,8 @@ export default {
   'error.read': 'Foto ini tidak bisa dibaca. Gunakan file JPEG atau PNG.',
 
   'upload.title': 'Letakkan foto di sini, atau klik untuk memilih',
+  'upload.titleTouch': 'Pilih foto',
+  'upload.camera': 'Ambil foto',
   'upload.text': 'Foto menghadap depan yang memperlihatkan kepala dan bahu. Foto tetap di perangkat ini.',
   'tip.straight.title': 'Lihat lurus ke kamera',
   'tip.straight.text': 'Wajah netral, mulut tertutup, mata terbuka. Tanpa kacamata.',
@@ -180,6 +182,8 @@ export default {
   'print.download': 'Unduh lembar cetak ({dpi} dpi JPEG)',
   'print.note': 'Cetak di 100% / ukuran asli, bukan "fit to page". Garis abu-abu adalah garis potong.',
 
+  'install.button': 'Pasang aplikasi',
+  'install.ios': 'Untuk memasang: di Safari, ketuk Bagikan, lalu Tambahkan ke Layar Utama.',
   'suggest.text': 'Sepertinya Anda berada di {country}.',
   'suggest.useRules': 'Pakai aturan {country}',
   'suggest.useLang': 'Ganti ke {language}',

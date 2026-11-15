@@ -32,6 +32,8 @@ export default {
   'error.read': 'Kan deze foto niet lezen. Gebruik een JPEG- of PNG-bestand.',
 
   'upload.title': 'Sleep je foto hierheen of klik om te kiezen',
+  'upload.titleTouch': 'Kies een foto',
+  'upload.camera': 'Maak een foto',
   'upload.text': 'Een foto van voren met je hoofd en schouders. Je foto blijft op dit apparaat.',
   'tip.straight.title': 'Kijk recht in de camera',
   'tip.straight.text': 'Neutraal gezicht, mond dicht, ogen open. Geen bril.',
@@ -180,6 +182,8 @@ export default {
   'print.download': 'Printvel downloaden ({dpi} dpi JPEG)',
   'print.note': 'Print op 100% / ware grootte, niet "aanpassen aan pagina". Grijze lijnen zijn kniplijnen.',
 
+  'install.button': 'App installeren',
+  'install.ios': 'Installeren: tik in Safari op Deel en dan op Zet op beginscherm.',
   'suggest.text': 'Het lijkt erop dat je in {country} bent.',
   'suggest.useRules': 'Regels voor {country} gebruiken',
   'suggest.useLang': 'Overschakelen naar {language}',

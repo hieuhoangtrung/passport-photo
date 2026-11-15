@@ -32,6 +32,8 @@ export default {
   'error.read': 'この写真を読み込めませんでした。JPEG または PNG ファイルをお使いください。',
 
   'upload.title': 'ここに写真をドロップ、またはクリックして選択',
+  'upload.titleTouch': '写真を選択',
+  'upload.camera': '写真を撮る',
   'upload.text': '頭と肩が写った正面向きの写真をお使いください。写真はこの端末から出ません。',
   'tip.straight.title': 'カメラをまっすぐ見る',
   'tip.straight.text': '無表情で口を閉じ、目を開けてください。メガネは外してください。',
@@ -180,6 +182,8 @@ export default {
   'print.download': '印刷用シートをダウンロード（{dpi} dpi JPEG）',
   'print.note': '「用紙に合わせる」ではなく、100% / 実際のサイズで印刷してください。グレーの線は切り取り線です。',
 
+  'install.button': 'アプリをインストール',
+  'install.ios': 'インストール方法: Safariで「共有」をタップし、「ホーム画面に追加」をタップします。',
   'suggest.text': '{country}からアクセスしているようです。',
   'suggest.useRules': '{country}の規定を使う',
   'suggest.useLang': '{language}に切り替える',

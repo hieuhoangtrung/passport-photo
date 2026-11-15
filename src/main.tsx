@@ -10,6 +10,9 @@ import { initialLocale } from './route';
 const theme = createTheme({ primaryColor: 'teal', defaultRadius: 'md' });
 const locale = initialLocale();
 
+// Offline support and "install app". Not in dev, where a cache would hide code changes.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+
 // Load the language first so a translated page does not flash English.
 loadMessages(locale).then((messages) =>
   createRoot(document.getElementById('root')!).render(

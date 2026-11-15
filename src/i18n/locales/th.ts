@@ -32,6 +32,8 @@ export default {
   'error.read': 'อ่านรูปนี้ไม่ได้ ใช้ไฟล์ JPEG หรือ PNG',
 
   'upload.title': 'ลากรูปมาวางที่นี่ หรือคลิกเพื่อเลือก',
+  'upload.titleTouch': 'เลือกรูปภาพ',
+  'upload.camera': 'ถ่ายรูป',
   'upload.text': 'รูปหน้าตรงที่เห็นศีรษะและไหล่ รูปของคุณอยู่ในเครื่องนี้เท่านั้น',
   'tip.straight.title': 'มองตรงไปที่กล้อง',
   'tip.straight.text': 'หน้าเรียบเฉย ปิดปาก ลืมตา ไม่ใส่แว่น',
@@ -180,6 +182,8 @@ export default {
   'print.download': 'ดาวน์โหลดแผ่นพิมพ์ ({dpi} dpi JPEG)',
   'print.note': 'พิมพ์ที่ 100% / ขนาดจริง ไม่ใช่ "พอดีหน้า" เส้นสีเทาคือเส้นตัด',
 
+  'install.button': 'ติดตั้งแอป',
+  'install.ios': 'วิธีติดตั้ง: ใน Safari แตะ แชร์ แล้วแตะ เพิ่มไปยังหน้าจอโฮม',
   'suggest.text': 'ดูเหมือนคุณอยู่ที่{country}',
   'suggest.useRules': 'ใช้ข้อกำหนดของ{country}',
   'suggest.useLang': 'เปลี่ยนเป็น{language}',

@@ -32,6 +32,8 @@ export default {
   'error.read': 'यह फोटो पढ़ी नहीं जा सकी। JPEG या PNG फ़ाइल इस्तेमाल करें।',
 
   'upload.title': 'अपनी फोटो यहाँ छोड़ें, या चुनने के लिए क्लिक करें',
+  'upload.titleTouch': 'फ़ोटो चुनें',
+  'upload.camera': 'फ़ोटो लें',
   'upload.text': 'सामने से ली गई फोटो जिसमें सिर और कंधे दिखें। आपकी फोटो इसी डिवाइस पर रहती है।',
   'tip.straight.title': 'सीधे कैमरे में देखें',
   'tip.straight.text': 'सामान्य चेहरा, मुँह बंद, आँखें खुली। चश्मा नहीं।',
@@ -180,6 +182,8 @@ export default {
   'print.download': 'प्रिंट शीट डाउनलोड करें ({dpi} dpi JPEG)',
   'print.note': '100% / असली साइज़ पर प्रिंट करें, "fit to page" पर नहीं। स्लेटी लाइनें काटने की लाइनें हैं।',
 
+  'install.button': 'ऐप इंस्टॉल करें',
+  'install.ios': 'इंस्टॉल करने के लिए: Safari में शेयर करें पर टैप करें, फिर होम स्क्रीन में जोड़ें पर।',
   'suggest.text': 'लगता है आप {country} में हैं।',
   'suggest.useRules': '{country} के नियम इस्तेमाल करें',
   'suggest.useLang': '{language} में बदलें',

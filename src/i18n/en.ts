@@ -32,6 +32,8 @@ const en = {
   'error.read': 'Could not read this photo. Use a JPEG or PNG file.',
 
   'upload.title': 'Drop your photo here, or click to choose',
+  'upload.titleTouch': 'Choose a photo',
+  'upload.camera': 'Take a photo',
   'upload.text': 'A front-facing photo with your head and shoulders. Your photo stays on this device.',
   'tip.straight.title': 'Look straight at the camera',
   'tip.straight.text': 'Neutral face, mouth closed, eyes open. No glasses.',
@@ -179,6 +181,9 @@ const en = {
   'print.overflow': 'Photos that do not fit: {n}. Use fewer copies or bigger paper.',
   'print.download': 'Download print sheet ({dpi} dpi JPEG)',
   'print.note': 'Print at 100% / actual size, not "fit to page". Grey lines are cut lines.',
+
+  'install.button': 'Install app',
+  'install.ios': 'To install: in Safari, tap Share, then Add to Home Screen.',
 
   'suggest.text': 'It looks like you are in {country}.',
   'suggest.useRules': 'Use {country} rules',

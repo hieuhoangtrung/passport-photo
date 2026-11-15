@@ -32,6 +32,8 @@ export default {
   'error.read': 'Dieses Foto kann nicht gelesen werden. Verwende eine JPEG- oder PNG-Datei.',
 
   'upload.title': 'Foto hierher ziehen oder klicken zum Auswählen',
+  'upload.titleTouch': 'Foto auswählen',
+  'upload.camera': 'Foto aufnehmen',
   'upload.text': 'Ein Foto von vorne mit Kopf und Schultern. Dein Foto bleibt auf diesem Gerät.',
   'tip.straight.title': 'Schau direkt in die Kamera',
   'tip.straight.text': 'Neutraler Blick, Mund geschlossen, Augen offen. Keine Brille.',
@@ -180,6 +182,8 @@ export default {
   'print.download': 'Druckbogen herunterladen (JPEG, {dpi} dpi)',
   'print.note': 'In 100% / Originalgröße drucken, nicht „An Seite anpassen“. Graue Linien sind Schnittlinien.',
 
+  'install.button': 'App installieren',
+  'install.ios': 'Zum Installieren: Tippe in Safari auf Teilen und dann auf Zum Home-Bildschirm.',
   'suggest.text': 'Erkanntes Land: {country}.',
   'suggest.useRules': 'Vorgaben für {country} nutzen',
   'suggest.useLang': 'Auf {language} umstellen',

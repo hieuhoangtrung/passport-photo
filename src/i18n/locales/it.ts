@@ -32,6 +32,8 @@ export default {
   'error.read': 'Impossibile leggere questa foto. Usa un file JPEG o PNG.',
 
   'upload.title': 'Trascina qui la foto o clicca per sceglierla',
+  'upload.titleTouch': 'Scegli una foto',
+  'upload.camera': 'Scatta una foto',
   'upload.text': 'Una foto frontale con testa e spalle. La foto resta su questo dispositivo.',
   'tip.straight.title': "Guarda dritto nell'obiettivo",
   'tip.straight.text': 'Viso neutro, bocca chiusa, occhi aperti. Niente occhiali.',
@@ -180,6 +182,8 @@ export default {
   'print.download': 'Scarica foglio di stampa (JPEG {dpi} dpi)',
   'print.note': 'Stampa al 100% / dimensioni reali, non "adatta alla pagina". Le linee grigie sono linee di taglio.',
 
+  'install.button': 'Installa l’app',
+  'install.ios': 'Per installare: in Safari, tocca Condividi, poi Aggiungi a Home.',
   'suggest.text': 'Paese rilevato: {country}.',
   'suggest.useRules': 'Usa le regole per: {country}',
   'suggest.useLang': 'Passa a {language}',

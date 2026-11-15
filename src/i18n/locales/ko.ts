@@ -32,6 +32,8 @@ export default {
   'error.read': '이 사진을 읽을 수 없어요. JPEG 또는 PNG 파일을 사용하세요.',
 
   'upload.title': '여기에 사진을 끌어 놓거나 클릭해서 선택하세요',
+  'upload.titleTouch': '사진 선택',
+  'upload.camera': '사진 찍기',
   'upload.text': '머리와 어깨가 나온 정면 사진을 사용하세요. 사진은 이 기기에만 저장돼요.',
   'tip.straight.title': '카메라를 똑바로 보세요',
   'tip.straight.text': '무표정으로 입을 다물고 눈을 뜨세요. 안경은 벗어 주세요.',
@@ -180,6 +182,8 @@ export default {
   'print.download': '인쇄용 시트 다운로드({dpi} dpi JPEG)',
   'print.note': '"페이지에 맞춤"이 아닌 100% / 실제 크기로 인쇄하세요. 회색 선은 자르는 선이에요.',
 
+  'install.button': '앱 설치',
+  'install.ios': '설치하려면 Safari에서 공유를 탭한 다음 홈 화면에 추가를 탭하세요.',
   'suggest.text': '{country}에서 접속하신 것 같아요.',
   'suggest.useRules': '{country} 규정 사용',
   'suggest.useLang': '{language}(으)로 전환',

@@ -32,6 +32,8 @@ export default {
   'error.read': '無法讀取這張照片。請使用 JPEG 或 PNG 檔案。',
 
   'upload.title': '將照片拖曳到這裡，或點擊選擇',
+  'upload.titleTouch': '選擇照片',
+  'upload.camera': '拍照',
   'upload.text': '請使用正面照，拍到頭部和肩膀。照片只會留在這台裝置上。',
   'tip.straight.title': '直視鏡頭',
   'tip.straight.text': '表情自然、閉上嘴巴、張開眼睛。不要戴眼鏡。',
@@ -180,6 +182,8 @@ export default {
   'print.download': '下載列印排版（{dpi} dpi JPEG）',
   'print.note': '請以 100% / 實際大小列印，不要選擇「符合頁面大小」。灰線為裁切線。',
 
+  'install.button': '安裝 App',
+  'install.ios': '安裝方式：在 Safari 中點一下「分享」，然後點一下「加入主畫面」。',
   'suggest.text': '你似乎位於{country}。',
   'suggest.useRules': '套用{country}規定',
   'suggest.useLang': '切換為{language}',

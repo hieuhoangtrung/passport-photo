@@ -10,6 +10,7 @@ import {
   Button,
   Card,
   Container,
+  FileButton,
   Grid,
   Group,
   List,
@@ -30,6 +31,7 @@ import { useMediaQuery } from '@mantine/hooks';
 import {
   IconAlertTriangle,
   IconBulb,
+  IconCamera,
   IconCheck,
   IconDownload,
   IconEyeCheck,
@@ -58,10 +60,14 @@ import type { MessageKey } from './i18n/en';
 import { browserCountry, LOCALE_KEY, parsePath, pathFor } from './route';
 import { DEFAULT_PRINT, PrintSheet, type PrintSettings } from './PrintSheet';
 import { DPI, downloadJpeg, render } from './render';
+import { InstallButton } from './Install';
 
 const IMG_KEY = 'passport-photo:image';
 const SETTINGS_KEY = 'passport-photo:settings';
 const MAX_SIDE = 2400; // keeps the local backup well under the ~5 MB storage limit
+
+/** Phones and tablets: bigger buttons, camera button. */
+const useTouch = () => useMediaQuery('(pointer: coarse)', false, { getInitialValueInEffect: false });
 
 type Settings = { mode: 'country' | 'size'; key: string; edits: Edits; print: PrintSettings };
 const DEFAULT_SETTINGS: Settings = { mode: 'country', key: DEFAULT_COUNTRY, edits: DEFAULT_EDITS, print: DEFAULT_PRINT };
@@ -104,6 +110,7 @@ const SLIDERS: { key: keyof Edits; label: MessageKey; min: number; max: number; 
 ];
 
 export default function App() {
+  const touch = useTouch();
   const { t, locale, setLocale, countryName } = useI18n();
   const [initial] = useState(loadSettings);
   // Read before the URL effect below rewrites the path.
@@ -219,16 +226,16 @@ export default function App() {
   return (
     <Box mih="100vh" bg="light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-8))">
       <Container size="lg" py="lg">
-        <Group justify="space-between" mb="xl" wrap="wrap">
+        <Group justify="space-between" mb={{ base: 'md', sm: 'xl' }} wrap="wrap">
           <Group gap="sm">
             <ThemeIcon size={40} radius="md" variant="gradient" gradient={{ from: 'teal', to: 'cyan', deg: 135 }}>
               <IconUser size={24} />
             </ThemeIcon>
             <div>
-              <Title order={1} size="h3">
+              <Title order={1} fz={{ base: 20, sm: 26 }}>
                 {country ? t('seo.countryH1', { country: countryName(country) }) : t('seo.h1')}
               </Title>
-              <Text size="sm" c="dimmed">
+              <Text size="sm" c="dimmed" visibleFrom="sm">
                 {t('app.title')} - {t('app.subtitle')}
               </Text>
             </div>
@@ -246,6 +253,7 @@ export default function App() {
               value={locale}
               onChange={(v) => v && chooseLocale(v as Locale)}
             />
+            <InstallButton />
           </Group>
         </Group>
 
@@ -256,7 +264,7 @@ export default function App() {
               <Group gap="xs">
                 {suggest.cc && (
                   <Button
-                    size="xs"
+                    size={touch ? 'sm' : 'xs'}
                     onClick={() => {
                       setMode('country');
                       setKey(suggest.cc!);
@@ -268,7 +276,7 @@ export default function App() {
                 )}
                 {suggest.locale && (
                   <Button
-                    size="xs"
+                    size={touch ? 'sm' : 'xs'}
                     variant="light"
                     onClick={() => {
                       chooseLocale(suggest.locale!);
@@ -278,7 +286,7 @@ export default function App() {
                     {t('suggest.useLang', { language: LOCALES[suggest.locale] })}
                   </Button>
                 )}
-                <Button size="xs" variant="subtle" color="gray" onClick={closeSuggest}>
+                <Button size={touch ? 'sm' : 'xs'} variant="subtle" color="gray" onClick={closeSuggest}>
                   {t('suggest.dismiss')}
                 </Button>
               </Group>
@@ -298,7 +306,7 @@ export default function App() {
           <Grid gap="lg">
             <Grid.Col span={{ base: 12, md: 6 }}>
               <Stack gap="lg">
-                <Card withBorder padding="lg" pos="relative">
+                <Card withBorder padding="md" pos="relative">
                   <LoadingOverlay visible={busy} overlayProps={{ blur: 2 }} />
                   <Preview result={result} spec={spec} edits={edits} setEdits={setEdits} />
                   <Toolbar setEdits={setEdits} />
@@ -328,6 +336,18 @@ export default function App() {
             )}
           </Grid>
         )}
+        {src && result && (
+          <Box
+            hiddenFrom="md"
+            pos="sticky"
+            bottom={0}
+            mt="md"
+            py="sm"
+            style={{ zIndex: 10, paddingBottom: 'max(var(--mantine-spacing-sm), env(safe-area-inset-bottom))', background: 'var(--mantine-color-body)', borderTop: '1px solid var(--mantine-color-default-border)' }}
+          >
+            <DownloadButton result={result} label={mode === 'size' ? key : key.toLowerCase()} />
+          </Box>
+        )}
 
         <About country={country} spec={spec} />
         <Text size="xs" c="dimmed" ta="center" mt="xl">
@@ -340,6 +360,7 @@ export default function App() {
 
 function Upload({ onDrop, busy }: { onDrop: (f: File[]) => void; busy: boolean }) {
   const { t } = useI18n();
+  const touch = useTouch();
   const tips = [
     { icon: IconEyeCheck, title: t('tip.straight.title'), text: t('tip.straight.text') },
     { icon: IconBulb, title: t('tip.bg.title'), text: t('tip.bg.text') },
@@ -359,13 +380,22 @@ function Upload({ onDrop, busy }: { onDrop: (f: File[]) => void; busy: boolean }
             <IconX size={56} color="var(--mantine-color-red-6)" />
           </Dropzone.Reject>
           <Title order={2} size="h3" ta="center">
-            {t('upload.title')}
+            {t(touch ? 'upload.titleTouch' : 'upload.title')}
           </Title>
           <Text c="dimmed" ta="center" maw={460}>
             {t('upload.text')}
           </Text>
         </Stack>
       </Dropzone>
+      {touch && (
+        <FileButton onChange={(f) => f && onDrop([f])} accept="image/*" capture="user">
+          {(props) => (
+            <Button {...props} size="lg" variant="light" leftSection={<IconCamera size={22} />} disabled={busy}>
+              {t('upload.camera')}
+            </Button>
+          )}
+        </FileButton>
+      )}
       <SimpleGrid cols={{ base: 1, sm: 3 }}>
         {tips.map((t) => (
           <Card key={t.title} withBorder padding="md">
@@ -422,13 +452,14 @@ const TOOLS: { label: MessageKey; icon: React.ComponentType<{ size?: number }>; 
 
 function Toolbar({ setEdits }: { setEdits: SetEdits }) {
   const { t } = useI18n();
+  const size = useTouch() ? 40 : 'lg'; // 40 px: 7 buttons still fit in one row on a 375 px phone
   return (
     <Group justify="center" gap={4} mt="md" wrap="wrap" role="toolbar" aria-label={t('tool.toolbar')}>
       {TOOLS.map((tool) => (
         <Tooltip key={tool.label} label={t(tool.label)} withArrow>
           <ActionIcon
             variant="light"
-            size="lg"
+            size={size}
             aria-label={t(tool.label)}
             onClick={() => setEdits((e) => ({ ...e, [tool.key]: clampEdit(tool.key, (e[tool.key] as number) + tool.step) }))}
           >
@@ -437,7 +468,7 @@ function Toolbar({ setEdits }: { setEdits: SetEdits }) {
         </Tooltip>
       ))}
       <Tooltip label={t('tool.undo')} withArrow>
-        <ActionIcon variant="default" size="lg" aria-label={t('tool.undo')} onClick={() => setEdits(DEFAULT_EDITS)}>
+        <ActionIcon variant="default" size={size} aria-label={t('tool.undo')} onClick={() => setEdits(DEFAULT_EDITS)}>
           <IconArrowBackUp size={20} />
         </ActionIcon>
       </Tooltip>
@@ -753,13 +784,14 @@ function Adjust({ edits, setEdits, spec, country }: { edits: Edits; setEdits: (e
   const { t } = useI18n();
   // Sliders only for big screens or mouse users; phones use the photo toolbar and gestures.
   const showSliders = useMediaQuery('(min-width: 48em), (pointer: fine)', true, { getInitialValueInEffect: false });
+  const touch = useTouch();
   return (
     <Card withBorder padding="lg">
       <Group justify="space-between" mb="sm">
         <Title order={2} size="h5">
           {t('adjust.title')}
         </Title>
-        <Button size="xs" variant="subtle" leftSection={<IconRefresh size={14} />} onClick={() => setEdits(DEFAULT_EDITS)}>
+        <Button size={touch ? 'sm' : 'xs'} variant="subtle" leftSection={<IconRefresh size={14} />} onClick={() => setEdits(DEFAULT_EDITS)}>
           {t('adjust.reset')}
         </Button>
       </Group>
@@ -812,14 +844,7 @@ function Download(p: { result: ReturnType<typeof render> | null; label: string; 
           {t('download.failed')}
         </Alert>
       )}
-      <Button
-        fullWidth
-        leftSection={<IconDownload size={18} />}
-        disabled={!p.result}
-        onClick={() => p.result && downloadJpeg(p.result.canvas, DPI, `passport-photo-${p.label}.jpg`)}
-      >
-        {t('download.photo', { dpi: DPI })}
-      </Button>
+      <DownloadButton result={p.result} label={p.label} />
       <Text size="xs" c="dimmed" mt={6} ta="center">
         {t('download.printHint')}
       </Text>
@@ -830,6 +855,15 @@ function Download(p: { result: ReturnType<typeof render> | null; label: string; 
         {t('download.clear')}
       </Button>
     </Card>
+  );
+}
+
+function DownloadButton({ result, label }: { result: ReturnType<typeof render> | null; label: string }) {
+  const { t } = useI18n();
+  return (
+    <Button fullWidth leftSection={<IconDownload size={18} />} disabled={!result} onClick={() => result && downloadJpeg(result.canvas, DPI, `passport-photo-${label}.jpg`)}>
+      {t('download.photo', { dpi: DPI })}
+    </Button>
   );
 }
 
@@ -869,6 +903,7 @@ const SWATCHES = ['white', 'grey', 'cream', 'blue'] as const;
 /** Background colour choice; the country's colour is selected until the user picks another. */
 function BgPicker({ spec, country, value, onChange }: { spec: Spec; country?: string; value: string | null; onChange: (c: string | null) => void }) {
   const { t, countryName } = useI18n();
+  const size = useTouch() ? 40 : 28;
   const current = bgColorFor(spec, value);
   const recommended = BG_COLORS[spec.bg ?? 'white'];
   return (
@@ -885,7 +920,7 @@ function BgPicker({ spec, country, value, onChange }: { spec: Spec; country?: st
               aria-checked={current === colour}
               aria-label={label}
               color={colour}
-              size={28}
+              size={size}
               style={{ cursor: 'pointer', border: '1px solid var(--mantine-color-gray-4)' }}
               onClick={() => onChange(colour === recommended ? null : colour)}
             >

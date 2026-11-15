@@ -32,6 +32,8 @@ export default {
   'error.read': 'Bu fotoğraf okunamadı. JPEG veya PNG dosyası kullanın.',
 
   'upload.title': 'Fotoğrafınızı buraya bırakın veya seçmek için tıklayın',
+  'upload.titleTouch': 'Bir fotoğraf seçin',
+  'upload.camera': 'Fotoğraf çekin',
   'upload.text': 'Başınızın ve omuzlarınızın göründüğü, karşıdan çekilmiş bir fotoğraf. Fotoğrafınız bu cihazda kalır.',
   'tip.straight.title': 'Doğrudan kameraya bakın',
   'tip.straight.text': 'Nötr ifade, ağız kapalı, gözler açık. Gözlük yok.',
@@ -180,6 +182,8 @@ export default {
   'print.download': 'Baskı sayfasını indir ({dpi} dpi JPEG)',
   'print.note': '100% / gerçek boyutta yazdırın, "sayfaya sığdır" seçeneğiyle değil. Gri çizgiler kesim çizgileridir.',
 
+  'install.button': 'Uygulamayı yükleyin',
+  'install.ios': "Yüklemek için: Safari'de Paylaş'a, ardından Ana Ekrana Ekle'ye dokunun.",
   'suggest.text': 'Konumunuz {country} gibi görünüyor.',
   'suggest.useRules': '{country} kurallarını kullan',
   'suggest.useLang': '{language} diline geç',

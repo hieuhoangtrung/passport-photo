@@ -32,6 +32,8 @@ export default {
   'error.read': 'تعذّرت قراءة هذه الصورة. استخدم ملف JPEG أو PNG.',
 
   'upload.title': 'أفلت صورتك هنا، أو انقر للاختيار',
+  'upload.titleTouch': 'اختر صورة',
+  'upload.camera': 'التقط صورة',
   'upload.text': 'صورة أمامية يظهر فيها الرأس والكتفان. تبقى صورتك على هذا الجهاز.',
   'tip.straight.title': 'انظر مباشرة إلى الكاميرا',
   'tip.straight.text': 'وجه محايد، فم مغلق، عينان مفتوحتان. بلا نظارات.',
@@ -180,6 +182,8 @@ export default {
   'print.download': 'تنزيل ورقة الطباعة ({dpi} dpi JPEG)',
   'print.note': 'اطبع بحجم 100% / الحجم الفعلي، وليس "ملاءمة للصفحة". الخطوط الرمادية هي خطوط القص.',
 
+  'install.button': 'تثبيت التطبيق',
+  'install.ios': 'للتثبيت: في Safari، اضغط على مشاركة، ثم إضافة إلى الشاشة الرئيسية.',
   'suggest.text': 'يبدو أنك في {country}.',
   'suggest.useRules': 'استخدام شروط {country}',
   'suggest.useLang': 'التبديل إلى {language}',

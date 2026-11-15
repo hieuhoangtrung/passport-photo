@@ -32,6 +32,8 @@ export default {
   'error.read': 'Không đọc được ảnh này. Hãy dùng tệp JPEG hoặc PNG.',
 
   'upload.title': 'Thả ảnh vào đây hoặc bấm để chọn',
+  'upload.titleTouch': 'Chọn ảnh',
+  'upload.camera': 'Chụp ảnh',
   'upload.text': 'Ảnh chụp thẳng mặt, thấy rõ đầu và vai. Ảnh vẫn ở trên máy này.',
   'tip.straight.title': 'Nhìn thẳng vào máy ảnh',
   'tip.straight.text': 'Mặt tự nhiên, ngậm miệng, mở mắt. Không đeo kính.',
@@ -180,6 +182,8 @@ export default {
   'print.download': 'Tải tờ in ({dpi} dpi JPEG)',
   'print.note': 'In ở tỷ lệ 100% / kích thước thực, không chọn "vừa trang". Đường xám là đường cắt.',
 
+  'install.button': 'Cài đặt ứng dụng',
+  'install.ios': 'Để cài đặt: trong Safari, nhấn Chia sẻ, rồi Thêm vào Màn hình chính.',
   'suggest.text': 'Có vẻ bạn đang ở {country}.',
   'suggest.useRules': 'Dùng quy định của {country}',
   'suggest.useLang': 'Chuyển sang {language}',

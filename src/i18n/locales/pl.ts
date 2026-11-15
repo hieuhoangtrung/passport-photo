@@ -32,6 +32,8 @@ export default {
   'error.read': 'Nie można odczytać tego zdjęcia. Użyj pliku JPEG lub PNG.',
 
   'upload.title': 'Upuść tu zdjęcie lub kliknij, aby wybrać',
+  'upload.titleTouch': 'Wybierz zdjęcie',
+  'upload.camera': 'Zrób zdjęcie',
   'upload.text': 'Zdjęcie na wprost, z głową i ramionami. Zdjęcie zostaje na tym urządzeniu.',
   'tip.straight.title': 'Patrz prosto w obiektyw',
   'tip.straight.text': 'Neutralna mina, zamknięte usta, otwarte oczy. Bez okularów.',
@@ -180,6 +182,8 @@ export default {
   'print.download': 'Pobierz arkusz do druku ({dpi} dpi JPEG)',
   'print.note': 'Drukuj w skali 100% / w rzeczywistym rozmiarze, nie „dopasuj do strony”. Szare linie to linie cięcia.',
 
+  'install.button': 'Zainstaluj aplikację',
+  'install.ios': 'Aby zainstalować: w Safari stuknij Udostępnij, a potem Do ekranu początkowego.',
   'suggest.text': 'Wygląda na to, że Twój kraj to {country}.',
   'suggest.useRules': 'Użyj wymogów: {country}',
   'suggest.useLang': 'Zmień język: {language}',
