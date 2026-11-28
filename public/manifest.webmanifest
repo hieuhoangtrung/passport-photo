@@ -3,7 +3,7 @@
   "short_name": "Passport Photo",
   "description": "Make a passport photo for free. Your photo never leaves your device.",
   "id": "/",
-  "start_url": "/",
+  "start_url": "/app/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#f8f9fa",

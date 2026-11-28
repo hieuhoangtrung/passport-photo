@@ -190,6 +190,6 @@ export default {
   'suggest.dismiss': 'No, gracias',
 
   'footer.text':
-    'Sin cuenta, sin rastreo y sin pagos. La detección de la cara se hace en tu dispositivo con modelos de código abierto de MediaPipe. Las normas cambian - confírmalas con tu oficina de pasaportes.',
+    'Sin cuenta, sin cookies y sin pagos. La detección de la cara se hace en tu dispositivo con modelos de código abierto de MediaPipe. Las normas cambian - confírmalas con tu oficina de pasaportes.',
   'footer.geo': 'Para sugerirte ajustes, nuestro proveedor indica a esta página desde qué país te conectas. No lo guardamos.',
 } satisfies Partial<Messages>;

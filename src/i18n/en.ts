@@ -191,7 +191,7 @@ const en = {
   'suggest.dismiss': 'No thanks',
 
   'footer.text':
-    'No account, no tracking, no payment. Face detection runs on your device with open-source MediaPipe models. Rules change - confirm with your passport office.',
+    'No account, no cookies, no payment. Face detection runs on your device with open-source MediaPipe models. Rules change - confirm with your passport office.',
   'footer.geo': 'To suggest settings, our host tells this page which country you connect from. We do not store it.',
 };
 

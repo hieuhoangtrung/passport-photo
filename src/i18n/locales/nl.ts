@@ -190,6 +190,6 @@ export default {
   'suggest.dismiss': 'Nee, bedankt',
 
   'footer.text':
-    'Geen account, geen tracking, niets betalen. Gezichtsherkenning draait op je apparaat met opensource MediaPipe-modellen. Regels veranderen - controleer ze bij je paspoortinstantie.',
+    'Geen account, geen cookies, niets betalen. Gezichtsherkenning draait op je apparaat met opensource MediaPipe-modellen. Regels veranderen - controleer ze bij je paspoortinstantie.',
   'footer.geo': 'Om instellingen voor te stellen, vertelt onze host deze pagina vanuit welk land je verbinding maakt. We slaan dit niet op.',
 } satisfies Partial<Messages>;

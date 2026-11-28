@@ -190,6 +190,6 @@ export default {
   'suggest.dismiss': '不用了',
 
   'footer.text':
-    '无需注册，不追踪，不收费。人脸检测使用开源 MediaPipe 模型在你的设备上运行。规定可能会变化 - 请向护照签发机构确认。',
+    '无需注册，不使用 Cookie，不收费。人脸检测使用开源 MediaPipe 模型在你的设备上运行。规定可能会变化 - 请向护照签发机构确认。',
   'footer.geo': '为了推荐设置，我们的托管服务会告诉此页面你从哪个国家访问。我们不会保存这些信息。',
 } satisfies Partial<Messages>;

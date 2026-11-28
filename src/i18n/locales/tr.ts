@@ -190,6 +190,6 @@ export default {
   'suggest.dismiss': 'Hayır, teşekkürler',
 
   'footer.text':
-    'Hesap yok, takip yok, ödeme yok. Yüz algılama, açık kaynak MediaPipe modelleriyle cihazınızda çalışır. Kurallar değişebilir - pasaport makamınızla teyit edin.',
+    'Hesap yok, çerez yok, ödeme yok. Yüz algılama, açık kaynak MediaPipe modelleriyle cihazınızda çalışır. Kurallar değişebilir - pasaport makamınızla teyit edin.',
   'footer.geo': 'Ayar önerebilmek için sunucumuz bu sayfaya hangi ülkeden bağlandığınızı bildirir. Bunu saklamıyoruz.',
 } satisfies Partial<Messages>;

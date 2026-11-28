@@ -190,6 +190,6 @@ export default {
   'suggest.dismiss': 'Não, obrigado',
 
   'footer.text':
-    'Sem conta, sem rastreamento, sem pagamento. A detecção do rosto roda no seu aparelho com modelos de código aberto do MediaPipe. As regras mudam - confirme com o órgão emissor do passaporte.',
+    'Sem conta, sem cookies, sem pagamento. A detecção do rosto roda no seu aparelho com modelos de código aberto do MediaPipe. As regras mudam - confirme com o órgão emissor do passaporte.',
   'footer.geo': 'Para sugerir configurações, nosso provedor informa a esta página de qual país você se conecta. Não guardamos essa informação.',
 } satisfies Partial<Messages>;

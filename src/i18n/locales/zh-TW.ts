@@ -190,6 +190,6 @@ export default {
   'suggest.dismiss': '不用了，謝謝',
 
   'footer.text':
-    '不需註冊、不追蹤、不收費。臉部偵測使用開源 MediaPipe 模型在你的裝置上執行。規定可能會變更 - 請向護照核發機關確認。',
+    '不需註冊、不使用 Cookie、不收費。臉部偵測使用開源 MediaPipe 模型在你的裝置上執行。規定可能會變更 - 請向護照核發機關確認。',
   'footer.geo': '為了建議設定，我們的主機服務會告知此頁面你從哪個國家連線。我們不會儲存這項資訊。',
 } satisfies Partial<Messages>;

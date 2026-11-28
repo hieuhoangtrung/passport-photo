@@ -190,6 +190,6 @@ export default {
   'suggest.dismiss': 'Tidak, terima kasih',
 
   'footer.text':
-    'Tanpa akun, tanpa pelacakan, tanpa bayar. Deteksi wajah berjalan di perangkat Anda dengan model MediaPipe open source. Aturan bisa berubah - pastikan ke kantor imigrasi.',
+    'Tanpa akun, tanpa cookie, tanpa bayar. Deteksi wajah berjalan di perangkat Anda dengan model MediaPipe open source. Aturan bisa berubah - pastikan ke kantor imigrasi.',
   'footer.geo': 'Untuk menyarankan pengaturan, server kami memberi tahu halaman ini dari negara mana Anda terhubung. Kami tidak menyimpannya.',
 } satisfies Partial<Messages>;

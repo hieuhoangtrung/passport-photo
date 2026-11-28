@@ -190,6 +190,6 @@ export default {
   'suggest.dismiss': 'Non merci',
 
   'footer.text':
-    "Sans compte, sans suivi, sans paiement. La détection du visage se fait sur votre appareil avec les modèles open source MediaPipe. Les règles changent - vérifiez auprès de l'administration.",
+    "Sans compte, sans cookies, sans paiement. La détection du visage se fait sur votre appareil avec les modèles open source MediaPipe. Les règles changent - vérifiez auprès de l'administration.",
   'footer.geo': "Pour vous suggérer des réglages, notre hébergeur indique à cette page depuis quel pays vous vous connectez. Nous ne l'enregistrons pas.",
 } satisfies Partial<Messages>;

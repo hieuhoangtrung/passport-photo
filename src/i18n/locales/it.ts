@@ -190,6 +190,6 @@ export default {
   'suggest.dismiss': 'No, grazie',
 
   'footer.text':
-    "Nessun account, nessun tracciamento, nessun pagamento. Il rilevamento del viso avviene sul tuo dispositivo con i modelli open source MediaPipe. Le regole cambiano - verifica con l'ufficio passaporti.",
+    "Nessun account, nessun cookie, nessun pagamento. Il rilevamento del viso avviene sul tuo dispositivo con i modelli open source MediaPipe. Le regole cambiano - verifica con l'ufficio passaporti.",
   'footer.geo': 'Per suggerirti le impostazioni, il nostro hosting comunica a questa pagina da quale paese ti colleghi. Non lo salviamo.',
 } satisfies Partial<Messages>;

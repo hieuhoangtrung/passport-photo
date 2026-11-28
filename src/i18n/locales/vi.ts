@@ -190,6 +190,6 @@ export default {
   'suggest.dismiss': 'Không, cảm ơn',
 
   'footer.text':
-    'Không tài khoản, không theo dõi, không trả phí. Nhận diện khuôn mặt chạy trên máy bạn bằng mô hình MediaPipe mã nguồn mở. Quy định có thể thay đổi - hãy xác nhận với cơ quan cấp hộ chiếu.',
+    'Không tài khoản, không cookie, không trả phí. Nhận diện khuôn mặt chạy trên máy bạn bằng mô hình MediaPipe mã nguồn mở. Quy định có thể thay đổi - hãy xác nhận với cơ quan cấp hộ chiếu.',
   'footer.geo': 'Để gợi ý cài đặt, máy chủ cho trang này biết bạn kết nối từ nước nào. Chúng tôi không lưu thông tin này.',
 } satisfies Partial<Messages>;

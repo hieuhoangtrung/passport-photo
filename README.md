@@ -3,7 +3,7 @@
 Free, open-source passport photo maker that runs in your browser. **Live: https://passportphotos.pages.dev** Upload a photo, and the app crops it to the correct size for your country, checks it against passport photo rules, and makes a print sheet.
 
 - **Private:** face detection and editing run on your device. The photo is never uploaded.
-- **Free:** no account, no watermark, no payment, no tracking.
+- **Free:** no account, no watermark, no payment, no cookies. Visits are counted without cookies or personal data (Cloudflare Web Analytics).
 - **163 countries** and common sizes (35 × 45 mm, 2 × 2 in, 33 × 48 mm, 50 × 70 mm and more).
 - **20 languages**, with right-to-left support for Arabic.
 - **Automatic checks:** head size, eye height, tilt, centring, eyes open, neutral expression, background, light, resolution.

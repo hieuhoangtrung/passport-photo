@@ -190,6 +190,6 @@ export default {
   'suggest.dismiss': 'Nie, dziękuję',
 
   'footer.text':
-    'Bez konta, bez śledzenia, bez opłat. Wykrywanie twarzy działa na Twoim urządzeniu dzięki otwartym modelom MediaPipe. Wymogi się zmieniają - potwierdź je w urzędzie paszportowym.',
+    'Bez konta, bez plików cookie, bez opłat. Wykrywanie twarzy działa na Twoim urządzeniu dzięki otwartym modelom MediaPipe. Wymogi się zmieniają - potwierdź je w urzędzie paszportowym.',
   'footer.geo': 'Aby zaproponować ustawienia, nasz serwer przekazuje tej stronie kraj, z którego się łączysz. Nie zapisujemy tego.',
 } satisfies Partial<Messages>;

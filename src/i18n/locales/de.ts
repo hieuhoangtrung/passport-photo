@@ -190,6 +190,6 @@ export default {
   'suggest.dismiss': 'Nein danke',
 
   'footer.text':
-    'Kein Konto, kein Tracking, keine Kosten. Die Gesichtserkennung läuft auf deinem Gerät mit Open-Source-Modellen von MediaPipe. Vorgaben ändern sich - prüfe sie bei deiner Passbehörde.',
+    'Kein Konto, keine Cookies, keine Kosten. Die Gesichtserkennung läuft auf deinem Gerät mit Open-Source-Modellen von MediaPipe. Vorgaben ändern sich - prüfe sie bei deiner Passbehörde.',
   'footer.geo': 'Für Vorschläge teilt unser Hoster dieser Seite mit, aus welchem Land du dich verbindest. Wir speichern das nicht.',
 } satisfies Partial<Messages>;
